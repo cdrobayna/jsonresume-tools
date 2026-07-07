@@ -1,1 +1,17 @@
 .direnv/
+node_modules/
+dist/
+*.tsbuildinfo
+.pnpm-store/
+coverage/
+*.tgz
+
+# OS / editor junk — harmless locally, noise in a public multi-contributor repo
+.DS_Store
+.vscode/
+.idea/
+
+# package manager debug logs
+npm-debug.log*
+pnpm-debug.log*
+yarn-error.log*
