@@ -1,0 +1,40 @@
+{
+  "name": "jsonresume-parity",
+  "version": "0.0.0",
+  "description": "Verify structural and content parity across locale variants of a JSON Resume (jsonresume.org).",
+  "keywords": [
+    "json resume",
+    "jsonresume",
+    "resume",
+    "cv",
+    "i18n",
+    "localization",
+    "parity",
+    "lint"
+  ],
+  "license": "MIT",
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "bin": {
+    "jsonresume-parity": "./dist/bin.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json"
+  },
+  "dependencies": {
+    "@jsonresume-tools/core": "workspace:*"
+  }
+}
