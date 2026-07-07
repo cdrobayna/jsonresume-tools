@@ -1,0 +1,39 @@
+{
+  "name": "jsonresume-lint",
+  "version": "0.0.0",
+  "description": "Per-file quality checks for JSON Resume files: date formats, reverse chronology, URLs, email, leftover placeholders, and optional schema validation.",
+  "keywords": [
+    "json resume",
+    "jsonresume",
+    "resume",
+    "cv",
+    "lint",
+    "validation"
+  ],
+  "license": "MIT",
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "bin": {
+    "jsonresume-lint": "./dist/bin.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json"
+  },
+  "dependencies": {
+    "@jsonresume-tools/core": "workspace:*",
+    "@jsonresume/schema": "^1.3.0"
+  }
+}
