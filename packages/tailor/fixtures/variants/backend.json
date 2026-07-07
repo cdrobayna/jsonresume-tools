@@ -1,0 +1,18 @@
+{
+  "$schema": "../../tailor-variant.schema.json",
+  "name": "backend",
+  "description": "Backend engineer roles (Node/NestJS-focused)",
+  "tag": "backend",
+  "also": ["short"],
+  "basics": {
+    "label": "Backend Engineer",
+    "summary": "Backend engineer with production experience across Node.js, PostgreSQL, and cloud infrastructure."
+  },
+  "sections": {
+    "drop": ["awards"]
+  },
+  "limits": {
+    "work": 4,
+    "projects": 1
+  }
+}

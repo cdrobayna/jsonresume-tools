@@ -1,0 +1,43 @@
+{
+  "name": "jsonresume-tailor",
+  "version": "0.0.0",
+  "description": "Generate role-tailored variants of a JSON Resume from a single annotated master resume.",
+  "keywords": [
+    "json resume",
+    "jsonresume",
+    "resume",
+    "cv",
+    "tailor",
+    "variant"
+  ],
+  "license": "MIT",
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "bin": {
+    "jsonresume-tailor": "./dist/bin.js"
+  },
+  "files": [
+    "dist",
+    "tailor-variant.schema.json"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json"
+  },
+  "dependencies": {
+    "@jsonresume-tools/core": "workspace:*",
+    "ajv": "^8.17.1"
+  },
+  "devDependencies": {
+    "@jsonresume/schema": "^1.3.0"
+  }
+}

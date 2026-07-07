@@ -1,0 +1,58 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://raw.githubusercontent.com/cdrobayna/jsonresume-tools/main/packages/tailor/tailor-variant.schema.json",
+  "title": "jsonresume-tailor variant",
+  "description": "Declarative description of a role-tailored resume variant consumed by `jsonresume-tailor build`.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["name", "tag"],
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "Optional URL to this schema, for editor autocompletion."
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Variant name. Should match the variant file's basename."
+    },
+    "description": {
+      "type": "string"
+    },
+    "tag": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Primary tag. An entry is included when its meta.tailor.tags intersects the active tag set."
+    },
+    "also": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Secondary tags cascaded into the active tag set alongside `tag`."
+    },
+    "basics": {
+      "type": "object",
+      "description": "Shallow overrides merged onto resume.basics."
+    },
+    "sections": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "order": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Final key order of the output resume. Sections not listed go last, in their original order."
+        },
+        "drop": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Sections to remove entirely from the output."
+        }
+      }
+    },
+    "limits": {
+      "type": "object",
+      "additionalProperties": { "type": "number" },
+      "description": "Per-section cap on the number of entries emitted, applied after filtering."
+    }
+  }
+}

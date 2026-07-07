@@ -91,3 +91,54 @@ export async function runCli(argv: string[], options: RunCliOptions): Promise<nu
     return 2
   }
 }
+
+export interface Subcommand {
+  describe: string
+  run: (argv: string[]) => Promise<{ code: number; stdout?: string; stderr?: string }>
+}
+
+export interface RunSubcommandCliOptions {
+  name: string
+  helpText: string
+  commands: Record<string, Subcommand>
+}
+
+/**
+ * Shared entry point for CLIs built around verbs (`build`, `list`, `check`, ...) rather than a
+ * flat file list — a sibling to `runCli` for tools whose subcommands take different flags.
+ * Owns the same lifecycle concerns `runCli` does (`--help`, unknown-input handling, exit codes,
+ * stdout/stderr routing) while leaving per-command flag parsing to the command itself: each
+ * `Subcommand.run` parses its own argv and returns its own exit code, so a caller can
+ * distinguish e.g. a validation failure (1) from a usage error (2) without this harness knowing
+ * about command-specific error types. A `CliUsageError` thrown by a command is still caught
+ * here and mapped to exit `2`, matching `runCli`'s convention.
+ */
+export async function runSubcommandCli(argv: string[], options: RunSubcommandCliOptions): Promise<number> {
+  const [cmd, ...rest] = argv
+
+  if (!cmd || cmd === '--help' || cmd === '-h') {
+    console.log(options.helpText)
+    return 0
+  }
+
+  const command = options.commands[cmd]
+  if (!command) {
+    console.error(`${options.name}: unknown command "${cmd}"`)
+    console.error(options.helpText)
+    return 2
+  }
+
+  try {
+    const { code, stdout, stderr } = await command.run(rest)
+    if (stdout) console.log(stdout)
+    if (stderr) console.error(stderr)
+    return code
+  } catch (err) {
+    if (err instanceof CliUsageError) {
+      console.error(`${options.name}: ${err.message}`)
+      return 2
+    }
+    console.error(err instanceof Error ? err.message : String(err))
+    return 2
+  }
+}

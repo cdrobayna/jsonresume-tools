@@ -1,0 +1,8 @@
+{
+  "name": "sysadmin",
+  "description": "Systems administration roles",
+  "tag": "sysadmin",
+  "sections": {
+    "order": ["basics", "skills", "work", "education"]
+  }
+}

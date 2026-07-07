@@ -1,0 +1,8 @@
+export { checkTailor, defaults as checkDefaults } from './check.js'
+export type { TailorCheckRuleName } from './check.js'
+export { stripTailorMeta } from './strip.js'
+export { FILTERABLE_SECTIONS, tailor } from './tailor.js'
+export type { TailorOptions, TailorResult, TailorSectionSummary, TailorSummary } from './tailor.js'
+export type { JsonResume, Meta, ResumeEntry, TailorMeta, Variant, VariantSections } from './types/resume.js'
+export { listVariants, loadVariant, loadVariantFromString, loadVariants, ValidationError } from './variant.js'
+export type { VariantSummary } from './variant.js'

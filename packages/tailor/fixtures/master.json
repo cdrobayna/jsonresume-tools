@@ -1,0 +1,173 @@
+{
+  "basics": {
+    "name": "Jordan Rivera",
+    "label": "Software Engineer",
+    "email": "jordan.rivera@example.com",
+    "summary": "Generalist engineer with experience across backend systems and infrastructure.",
+    "location": { "city": "Rivertown", "countryCode": "US" }
+  },
+  "work": [
+    {
+      "name": "Bluebird Labs",
+      "position": "Backend Engineer",
+      "startDate": "2025-01",
+      "highlights": [
+        "Own the billing service handling 3M+ transactions/month.",
+        "Introduced contract testing between the checkout and payments services."
+      ],
+      "meta": { "tailor": { "tags": ["short", "backend"] } }
+    },
+    {
+      "name": "Foobar Cloud",
+      "position": "DevOps Engineer",
+      "startDate": "2024-01",
+      "endDate": "2024-12",
+      "highlights": [
+        "Built the org's Terraform-managed multi-account AWS baseline.",
+        "Cut CI pipeline time from 22 to 6 minutes by parallelizing test shards."
+      ],
+      "meta": { "tailor": { "tags": ["short", "devops"] } }
+    },
+    {
+      "name": "Acme Corp",
+      "position": "Backend Engineer",
+      "startDate": "2022-07",
+      "endDate": "2023-12",
+      "highlights": [
+        "Designed and shipped the payments service handling 2M+ transactions/month.",
+        "Migrated the monolith's checkout flow to a NestJS microservice, cutting p95 latency by 40%."
+      ],
+      "meta": { "tailor": { "tags": ["short", "backend"] } }
+    },
+    {
+      "name": "Northwind Traders",
+      "position": "Backend & Infrastructure Engineer",
+      "startDate": "2021-01",
+      "endDate": "2022-06",
+      "highlights": [
+        "Cut cloud spend 45% by migrating staging environments to spot instances.",
+        "Owned the notifications and billing services end-to-end.",
+        "Co-designed the product's core domain model on Node.js, TypeORM, and PostgreSQL.",
+        "Shipped customer-facing features across the checkout and onboarding flows.",
+        "Maintained the team's internal tooling: VPN, DNS, and secrets management."
+      ],
+      "meta": {
+        "tailor": {
+          "tags": ["short", "backend", "platform", "devops"],
+          "highlightTags": {
+            "*": [2],
+            "backend": [1, 2],
+            "platform": [0, 4],
+            "devops": [0, 4]
+          }
+        }
+      }
+    },
+    {
+      "name": "Contoso Systems",
+      "position": "Site Reliability Engineer",
+      "startDate": "2019-06",
+      "endDate": "2020-12",
+      "highlights": [
+        "Reduced production incident MTTR from 3 hours to 25 minutes.",
+        "Wrote the on-call runbooks still in use by the team today.",
+        "Introduced structured logging across every service."
+      ],
+      "meta": {
+        "tailor": {
+          "tags": ["devops", "sysadmin"],
+          "highlightTags": {
+            "*": [0, 2]
+          }
+        }
+      }
+    },
+    {
+      "name": "Initech Data",
+      "position": "Legacy Systems Consultant",
+      "startDate": "2018-02",
+      "endDate": "2019-05",
+      "highlights": ["Maintained a COBOL batch-processing pipeline during a phased decommission."]
+    },
+    {
+      "name": "Widget Industries",
+      "position": "IT Systems Administrator",
+      "startDate": "2015-01",
+      "endDate": "2018-01",
+      "highlights": [
+        "Administered a 60-host Linux fleet, automating patching with Ansible.",
+        "Ran the on-call rotation for internal infrastructure incidents."
+      ],
+      "meta": { "tailor": { "tags": ["sysadmin"] } }
+    }
+  ],
+  "skills": [
+    {
+      "name": "Backend",
+      "keywords": ["Node.js", "TypeScript", "NestJS", "PostgreSQL"],
+      "meta": {
+        "tailor": {
+          "tags": ["short", "backend"],
+          "labelPerTag": { "backend": "Core Backend Stack" }
+        }
+      }
+    },
+    {
+      "name": "Cloud & Infrastructure",
+      "keywords": ["AWS", "Terraform", "Docker"],
+      "meta": { "tailor": { "tags": ["short", "devops", "platform"] } }
+    },
+    {
+      "name": "Systems Administration",
+      "keywords": ["Linux", "Ansible", "WireGuard"],
+      "meta": { "tailor": { "tags": ["sysadmin"] } }
+    },
+    {
+      "name": "Data & Messaging",
+      "keywords": ["PostgreSQL", "Redis", "RabbitMQ"],
+      "meta": { "tailor": { "tags": ["backend"] } }
+    }
+  ],
+  "projects": [
+    {
+      "name": "Inventory Sync Service",
+      "description": "Idempotent inventory reconciliation between the warehouse system and the storefront.",
+      "highlights": [
+        "Built idempotent sync jobs processing 500K SKUs nightly.",
+        "Reduced reconciliation errors by 90% after switching to event sourcing."
+      ],
+      "meta": { "tailor": { "tags": ["short", "backend"] } }
+    },
+    {
+      "name": "Internal Dashboard",
+      "description": "Ops dashboard surfacing service health and deploy history.",
+      "highlights": ["Shipped a self-service deploy dashboard used by every team."],
+      "meta": { "tailor": { "tags": ["short", "backend", "platform"] } }
+    },
+    {
+      "name": "Homelab Automation",
+      "description": "Personal Kubernetes homelab used to prototype infrastructure patterns.",
+      "highlights": ["Automated a 3-node k3s cluster with GitOps via Flux."],
+      "meta": { "tailor": { "tags": ["devops", "sysadmin"] } }
+    }
+  ],
+  "education": [
+    {
+      "institution": "State University",
+      "area": "Computer Science",
+      "studyType": "B.Sc.",
+      "startDate": "2012-09",
+      "endDate": "2016-06",
+      "meta": { "tailor": { "tags": ["short", "backend", "devops", "sysadmin", "platform"] } }
+    }
+  ],
+  "awards": [
+    {
+      "title": "Employee of the Year",
+      "date": "2022-12",
+      "awarder": "Acme Corp",
+      "summary": "Recognized for leading the payments service migration.",
+      "meta": { "tailor": { "tags": ["short"] } }
+    }
+  ]
+}
