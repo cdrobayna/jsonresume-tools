@@ -1,0 +1,23 @@
+{
+  "basics": {
+    "name": "Jane Doe",
+    "email": "not-an-email",
+    "url": "not-a-url",
+    "summary": "TODO: write a real summary once the rebrand is finalized."
+  },
+  "work": [
+    {
+      "name": "Acme Corp",
+      "startDate": "2022-01",
+      "endDate": "2020-06"
+    },
+    {
+      "name": "Old Co",
+      "startDate": "2018-13",
+      "endDate": "2021-12"
+    }
+  ],
+  "meta": {
+    "language": "en"
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "basics": {
+    "name": "Jane Doe",
+    "email": "jane@example.com",
+    "url": "https://example.com",
+    "summary": "Ingeniera de software senior con una década de experiencia construyendo sistemas distribuidos."
+  },
+  "work": [
+    {
+      "name": "Acme Corp",
+      "startDate": "2022-01",
+      "endDate": "2023-06",
+      "url": "https://acme.example.com",
+      "highlights": ["Lideró la migración de la plataforma a Kubernetes."]
+    },
+    {
+      "name": "Old Co",
+      "startDate": "2018-03",
+      "endDate": "2021-12",
+      "highlights": ["Construyó la primera versión del sistema de facturación."]
+    }
+  ],
+  "meta": {
+    "language": "es"
+  }
+}
