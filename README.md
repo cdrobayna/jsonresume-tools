@@ -1,42 +1,47 @@
 # jsonresume-tools
 
-A pnpm monorepo of two focused, reusable checkers for [JSON Resume](https://jsonresume.org) files:
+A suite of independent tools for [JSON Resume](https://jsonresume.org) files. Each package
+below is self-contained and independently installable — use the one you need, ignore the rest.
 
-- **[`jsonresume-parity`](./packages/parity)** — verifies structural and content parity across
-  multiple locales of the same resume (e.g. `resume.en.json` vs `resume.es.json`): matching
-  shape, identical non-translatable fields (dates, URLs, emails, keywords), and translation
-  quality heuristics (length ratio, untranslated strings).
-- **[`jsonresume-lint`](./packages/lint)** — per-file quality checks: date format and ordering,
-  reverse-chronological sections, valid URLs/emails, leftover placeholders, and optional
-  JSON Resume schema validation.
+## Tools
 
-Both are built on a small private internal package, `@jsonresume-tools/core`, which provides
-shared types, severity handling (`off | warn | error`), a config loader (via
-[cosmiconfig](https://github.com/cosmiconfig/cosmiconfig)), and a CLI harness.
+| Package | What it does |
+|---|---|
+| [`jsonresume-parity`](./packages/parity) | Checks structural and content parity across locale variants of a resume (e.g. `resume.en.json` vs `resume.es.json`). |
+| [`jsonresume-lint`](./packages/lint) | Per-file quality checks: date format and ordering, chronology, URLs, email, placeholders, and optional schema validation. |
 
-## Why
+See each package's own README for its full rule set, CLI usage, and programmatic API.
 
-No existing tool in the JSON Resume ecosystem (resumed, hackmyresume, resume-cli, rendercv)
-checks multi-locale parity. This monorepo extracts that logic — originally a single-purpose
-validator maintained in a personal CV repo — into standalone, general-purpose packages.
+## Origin
+
+This collection started as a single-purpose validator maintained in a personal, bilingual
+(EN/ES) CV repo. No existing tool in the JSON Resume ecosystem (resumed, hackmyresume,
+resume-cli, rendercv) checks multi-locale parity — `jsonresume-parity` fills that gap.
+`jsonresume-lint` split out the per-file checks that don't depend on comparing two locales.
 
 ## Development
+
+This is a pnpm workspace — the following is for contributing to the tools themselves, not for
+using them in your own project (see each package's README for that).
 
 Requires Node ≥22 and pnpm. A Nix flake (`flake.nix`) provisions both via `direnv` (`use flake`).
 
 ```bash
 pnpm install
-pnpm build      # tsc -b across all packages
-pnpm test       # vitest across all packages
+pnpm build   # tsc across all packages
+pnpm test    # vitest across all packages
 ```
 
-Each package builds independently to its own `dist/` via `tsc`, targeting ESM/Node ≥22.
+Each package builds independently to its own `dist/`, targeting ESM/Node ≥22. A private,
+unpublished `@jsonresume-tools/core` package holds infrastructure shared internally between
+the published tools (types, severity handling, config loading, CLI harness) — it's an
+implementation detail, not something either tool exposes to consumers.
 
 ## Repository layout
 
 ```
 packages/
-  core/     @jsonresume-tools/core   (private, workspace-only)
+  core/     @jsonresume-tools/core   (private, workspace-only, shared internals)
   parity/   jsonresume-parity        (published)
   lint/     jsonresume-lint          (published)
 fixtures/   shared good/bad JSON Resume fixtures used by tests in packages/*
