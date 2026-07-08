@@ -31,13 +31,14 @@
     "tailor-variant.schema.json"
   ],
   "scripts": {
-    "build": "tsc -p tsconfig.json"
+    "build": "tsc -p tsconfig.json --noEmit && tsup"
   },
   "dependencies": {
-    "@jsonresume-tools/core": "workspace:*",
-    "ajv": "^8.17.1"
+    "ajv": "^8.17.1",
+    "cosmiconfig": "^9.0.0"
   },
   "devDependencies": {
+    "@jsonresume-tools/core": "workspace:*",
     "@jsonresume/schema": "^1.3.0"
   }
 }

@@ -32,9 +32,12 @@
     "dist"
   ],
   "scripts": {
-    "build": "tsc -p tsconfig.json"
+    "build": "tsc -p tsconfig.json --noEmit && tsup"
   },
   "dependencies": {
+    "cosmiconfig": "^9.0.0"
+  },
+  "devDependencies": {
     "@jsonresume-tools/core": "workspace:*"
   }
 }
