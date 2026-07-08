@@ -9,6 +9,7 @@ below is self-contained and independently installable — use the one you need, 
 |---|---|
 | [`jsonresume-parity`](./packages/parity) | Checks structural and content parity across locale variants of a resume (e.g. `resume.en.json` vs `resume.es.json`). |
 | [`jsonresume-lint`](./packages/lint) | Per-file quality checks: date format and ordering, chronology, URLs, email, placeholders, and optional schema validation. |
+| [`jsonresume-tailor`](./packages/tailor) | Generates role-tailored variants (backend, devops, sysadmin, ...) of a resume from a single annotated master JSON Resume. |
 
 See each package's own README for its full rule set, CLI usage, and programmatic API.
 
@@ -18,6 +19,8 @@ This collection started as a single-purpose validator maintained in a personal, 
 (EN/ES) CV repo. No existing tool in the JSON Resume ecosystem (resumed, hackmyresume,
 resume-cli, rendercv) checks multi-locale parity — `jsonresume-parity` fills that gap.
 `jsonresume-lint` split out the per-file checks that don't depend on comparing two locales.
+`jsonresume-tailor` generalizes a separate ad hoc `filter-short.js` script from that same CV
+repo into a reusable tool for generating role-specific resume variants.
 
 ## Development
 
@@ -44,6 +47,7 @@ packages/
   core/     @jsonresume-tools/core   (private, workspace-only, shared internals)
   parity/   jsonresume-parity        (published)
   lint/     jsonresume-lint          (published)
+  tailor/   jsonresume-tailor        (published)
 fixtures/   shared good/bad JSON Resume fixtures used by tests in packages/*
 ```
 
