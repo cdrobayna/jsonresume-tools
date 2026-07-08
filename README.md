@@ -53,7 +53,8 @@ fixtures/   shared good/bad JSON Resume fixtures used by tests in packages/*
 
 ## Status
 
-Pre-release. Packages are built and tested but not yet published to npm.
+Published. `jsonresume-parity`, `jsonresume-lint`, and `jsonresume-tailor` are all on npm at
+`0.1.0`.
 
 ## License
 
