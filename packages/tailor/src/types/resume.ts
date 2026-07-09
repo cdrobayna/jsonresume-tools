@@ -15,6 +15,14 @@ export interface TailorMeta {
    */
   highlightTags?: Record<string, number[]>
   /**
+   * Per-tag subset of `keywords` indices to emit. Same shape and semantics as `highlightTags`
+   * (including the universal `"*"` key), applied to `keywords` instead — lets a single mixed-stack
+   * skill or project entry (e.g. one "Backend" skill covering both Node.js and PHP keywords) show
+   * only the keywords relevant to the active variant instead of being split into separate entries.
+   * Entries without this map emit all keywords.
+   */
+  keywordTags?: Record<string, number[]>
+  /**
    * Per-tag override for the entry's label field (skills -> name, work -> position,
    * projects -> name). Silently ignored where the section has no mapped field.
    */
@@ -33,6 +41,7 @@ export interface Meta {
 export interface ResumeEntry {
   meta?: Meta
   highlights?: string[]
+  keywords?: string[]
   name?: string
   position?: string
   [key: string]: unknown

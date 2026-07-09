@@ -42,6 +42,22 @@ describe('checkTailor', () => {
     expect(codesOf(result.errors)).toContain('TAILOR_HIGHLIGHT_INDEX')
   })
 
+  it('flags an out-of-range keywordTags index as a hard error', () => {
+    const resume: JsonResume = {
+      skills: [
+        {
+          name: 'Backend',
+          keywords: ['Node.js', 'TypeScript'],
+          meta: { tailor: { tags: ['backend'], keywordTags: { backend: [0, 9] } } }
+        }
+      ]
+    }
+    const variants: Variant[] = [{ name: 'backend', tag: 'backend' }]
+
+    const result = checkTailor(resume, variants)
+    expect(codesOf(result.errors)).toContain('TAILOR_KEYWORD_INDEX')
+  })
+
   it('flags meta.tailor present with empty or missing tags', () => {
     const resume: JsonResume = { work: [{ name: 'Acme', meta: { tailor: {} } }] }
 

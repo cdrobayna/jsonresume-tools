@@ -68,6 +68,47 @@ describe('tailor', () => {
     expect((result.resume.work as any[])[0].highlights).toEqual(['h0'])
   })
 
+  it('emits all keywords when keywordTags is absent', () => {
+    const resume: JsonResume = {
+      skills: [{ name: 'Backend', keywords: ['Node.js', 'PHP', 'Laravel'], meta: { tailor: { tags: ['backend'] } } }]
+    }
+    const result = tailor(resume, makeVariant({ tag: 'backend' }))
+    expect((result.resume.skills as any[])[0].keywords).toEqual(['Node.js', 'PHP', 'Laravel'])
+  })
+
+  it('unions "*" with active-tag keywordTags, preserving original order without duplicates', () => {
+    const resume: JsonResume = {
+      skills: [
+        {
+          name: 'Backend',
+          keywords: ['Node.js', 'TypeScript', 'PHP', 'Laravel'],
+          meta: {
+            tailor: {
+              tags: ['node-ts', 'laravel'],
+              keywordTags: { '*': [0], 'node-ts': [0, 1], laravel: [2, 3] }
+            }
+          }
+        }
+      ]
+    }
+    const result = tailor(resume, makeVariant({ tag: 'node-ts' }))
+    expect((result.resume.skills as any[])[0].keywords).toEqual(['Node.js', 'TypeScript'])
+  })
+
+  it('silently ignores out-of-range keyword indices', () => {
+    const resume: JsonResume = {
+      skills: [
+        {
+          name: 'Backend',
+          keywords: ['Node.js', 'TypeScript'],
+          meta: { tailor: { tags: ['node-ts'], keywordTags: { 'node-ts': [0, 5] } } }
+        }
+      ]
+    }
+    const result = tailor(resume, makeVariant({ tag: 'node-ts' }))
+    expect((result.resume.skills as any[])[0].keywords).toEqual(['Node.js'])
+  })
+
   it('labelPerTag: the primary tag wins over secondaries', () => {
     const resume: JsonResume = {
       skills: [

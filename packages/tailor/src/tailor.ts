@@ -61,22 +61,38 @@ function entryTags(entry: ResumeEntry): string[] | undefined {
   return Array.isArray(tags) ? tags : undefined
 }
 
-/** Unions `highlightTags["*"]` with `highlightTags[t]` for every active tag `t`, then filters
- * `entry.highlights` down to those indices, preserving original order and de-duplicating.
- * Out-of-range indices are silently dropped (they never match any array position). A missing or
- * empty `highlightTags` map is a no-op — all highlights are kept (D3). */
-function filterHighlights(entry: ResumeEntry, activeTags: Set<string>): void {
-  const highlightTags = entry.meta?.tailor?.highlightTags
-  if (!highlightTags || Object.keys(highlightTags).length === 0) return
-  if (!Array.isArray(entry.highlights)) return
+/** Unions `tagIndices["*"]` with `tagIndices[t]` for every active tag `t`, then filters `values`
+ * down to those indices, preserving original order and de-duplicating. Out-of-range indices are
+ * silently dropped (they never match any array position). A missing or empty `tagIndices` map is
+ * a no-op — every value is kept. Shared by `filterHighlights` and `filterKeywords`. */
+function filterByTagIndices<T>(
+  values: T[] | undefined,
+  tagIndices: Record<string, number[]> | undefined,
+  activeTags: Set<string>
+): T[] | undefined {
+  if (!values || !tagIndices || Object.keys(tagIndices).length === 0) return values
 
   const keep = new Set<number>()
-  for (const index of highlightTags['*'] ?? []) keep.add(index)
+  for (const index of tagIndices['*'] ?? []) keep.add(index)
   for (const tag of activeTags) {
-    for (const index of highlightTags[tag] ?? []) keep.add(index)
+    for (const index of tagIndices[tag] ?? []) keep.add(index)
   }
 
-  entry.highlights = entry.highlights.filter((_, index) => keep.has(index))
+  return values.filter((_, index) => keep.has(index))
+}
+
+/** Filters `entry.highlights` per `meta.tailor.highlightTags` (see `filterByTagIndices`). */
+function filterHighlights(entry: ResumeEntry, activeTags: Set<string>): void {
+  if (!Array.isArray(entry.highlights)) return
+  entry.highlights = filterByTagIndices(entry.highlights, entry.meta?.tailor?.highlightTags, activeTags)
+}
+
+/** Filters `entry.keywords` per `meta.tailor.keywordTags` (see `filterByTagIndices`). Lets a
+ * mixed-stack skill/project entry show only the keywords relevant to the active variant without
+ * being split into separate entries. */
+function filterKeywords(entry: ResumeEntry, activeTags: Set<string>): void {
+  if (!Array.isArray(entry.keywords)) return
+  entry.keywords = filterByTagIndices(entry.keywords, entry.meta?.tailor?.keywordTags, activeTags)
 }
 
 /** Applies the first `labelPerTag` match found in `[variant.tag, ...variant.also]` order — the
@@ -154,6 +170,7 @@ export function tailor(resume: JsonResume, variant: Variant, options: TailorOpti
 
     for (const entry of filtered) {
       filterHighlights(entry, activeTags)
+      filterKeywords(entry, activeTags)
       applyLabelPerTag(entry, section, activeOrder)
       stripTailorMeta(entry)
     }
