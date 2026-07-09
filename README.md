@@ -40,6 +40,9 @@ unpublished `@jsonresume-tools/core` package holds infrastructure shared interna
 the published tools (types, severity handling, config loading, CLI harness) — it's an
 implementation detail, not something either tool exposes to consumers.
 
+See [CONTRIBUTING.md](./CONTRIBUTING.md) for branching conventions, changesets, and how
+releases are cut.
+
 ## Repository layout
 
 ```
