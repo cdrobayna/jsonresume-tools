@@ -1,6 +1,6 @@
 {
   "name": "jsonresume-lint",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Per-file quality checks for JSON Resume files: date formats, reverse chronology, URLs, email, leftover placeholders, and optional schema validation.",
   "keywords": [
     "json resume",

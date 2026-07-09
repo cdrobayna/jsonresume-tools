@@ -1,5 +1,11 @@
 # jsonresume-lint
 
+## 0.1.1
+
+### Patch Changes
+
+- cca7d91: Verify the automated changesets + GitHub Actions release pipeline end-to-end. No functional changes.
+
 ## 0.1.0
 
 ### Minor Changes
