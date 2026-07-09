@@ -64,6 +64,16 @@ describe('runBuild', () => {
     await expect(readFile(out, 'utf8')).rejects.toThrow()
   })
 
+  it('short flags (-r, -o, -q) produce the same result as long flags', async () => {
+    const out = await tempOutPath()
+    const result = await runBuild(['backend', '-r', MASTER, '--variant-file', BACKEND_VARIANT, '-o', out, '-q'])
+
+    expect(result.code).toBe(0)
+    const written = JSON.parse(await readFile(out, 'utf8'))
+    expect(written.work).toHaveLength(4)
+    expect(result.stderr).toBeUndefined()
+  })
+
   it('--quiet suppresses the basics-override warning', async () => {
     const out = await tempOutPath()
     const result = await runBuild(['backend', '--resume', MASTER, '--variant-file', BACKEND_VARIANT, '--out', out, '--quiet'])
@@ -102,6 +112,12 @@ describe('runBuild', () => {
 })
 
 describe('runList', () => {
+  it('short flag -d works like --variants-dir', async () => {
+    const result = await runList(['-d', VARIANTS_DIR])
+    expect(result.code).toBe(0)
+    expect(result.stdout).toContain('backend')
+  })
+
   it('lists the variants found in the fixtures directory', async () => {
     const result = await runList(['--variants-dir', VARIANTS_DIR])
     expect(result.code).toBe(0)
@@ -112,6 +128,11 @@ describe('runList', () => {
 })
 
 describe('runCheck', () => {
+  it('short flags -r and -d work like --resume and --variants-dir', async () => {
+    const result = await runCheck(['-r', MASTER, '-d', VARIANTS_DIR])
+    expect(result.code).toBe(0)
+  })
+
   it('runs cleanly against the fixture master and all fixture variants', async () => {
     const result = await runCheck(['--resume', MASTER, '--variants-dir', VARIANTS_DIR])
     expect(result.code).toBe(0)

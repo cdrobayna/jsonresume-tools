@@ -22,14 +22,12 @@ interface ParsedFlags {
   booleans: Set<string>
 }
 
-/**
- * Hand-rolled flag parser shared by the three subcommands below — each has a different set of
- * `--flag <value>` / `--boolean-flag` options, so this stays generic instead of hardcoding any
- * one command's shape. Mirrors the style (and the "unknown flag throws `CliUsageError`"
- * convention) of `@jsonresume-tools/core`'s `parseArgs`, just parameterized per-command since
- * `build`/`list`/`check` don't share a flag surface the way `lint`/`parity` do.
- */
-function parseFlags(argv: string[], valueFlags: string[], booleanFlags: string[]): ParsedFlags {
+function parseFlags(
+  argv: string[],
+  valueFlags: string[],
+  booleanFlags: string[],
+  shortFlags: Record<string, string> = {}
+): ParsedFlags {
   const positional: string[] = []
   const flags: Record<string, string> = {}
   const booleans = new Set<string>()
@@ -46,6 +44,16 @@ function parseFlags(argv: string[], valueFlags: string[], booleanFlags: string[]
         flags[name] = value
       } else {
         throw new CliUsageError(`unknown flag: ${arg}`)
+      }
+    } else if (arg.startsWith('-') && arg.length === 2) {
+      const long = shortFlags[arg[1]]
+      if (!long) throw new CliUsageError(`unknown flag: ${arg}`)
+      if (booleanFlags.includes(long)) {
+        booleans.add(long)
+      } else if (valueFlags.includes(long)) {
+        const value = argv[++i]
+        if (value === undefined) throw new CliUsageError(`-${arg[1]} requires a value`)
+        flags[long] = value
       }
     } else {
       positional.push(arg)
@@ -70,7 +78,12 @@ function isCommandResult(value: unknown): value is CommandResult {
 
 /** `jsonresume-tailor build <variant> --resume <path> --out <path> [--variant-file <path>] [--dry-run] [--quiet]` */
 export async function runBuild(argv: string[]): Promise<CommandResult> {
-  const { positional, flags, booleans } = parseFlags(argv, ['resume', 'out', 'variant-file'], ['dry-run', 'quiet'])
+  const { positional, flags, booleans } = parseFlags(
+    argv,
+    ['resume', 'out', 'variant-file'],
+    ['dry-run', 'quiet'],
+    { r: 'resume', o: 'out', n: 'dry-run', q: 'quiet' }
+  )
 
   const [variantName] = positional
   if (!variantName) throw new CliUsageError('build requires a <variant> argument, e.g. "build backend"')
@@ -121,7 +134,7 @@ export async function runBuild(argv: string[]): Promise<CommandResult> {
 
 /** `jsonresume-tailor list [--variants-dir <path>]` */
 export async function runList(argv: string[]): Promise<CommandResult> {
-  const { flags } = parseFlags(argv, ['variants-dir'], [])
+  const { flags } = parseFlags(argv, ['variants-dir'], [], { d: 'variants-dir' })
   const dir = flags['variants-dir'] ?? 'variants'
 
   let variants
@@ -142,7 +155,7 @@ export async function runList(argv: string[]): Promise<CommandResult> {
 
 /** `jsonresume-tailor check [<variant>] --resume <path> [--variants-dir <path>]` */
 export async function runCheck(argv: string[]): Promise<CommandResult> {
-  const { positional, flags } = parseFlags(argv, ['resume', 'variants-dir'], [])
+  const { positional, flags } = parseFlags(argv, ['resume', 'variants-dir'], [], { r: 'resume', d: 'variants-dir' })
   const [variantName] = positional
   if (!flags.resume) throw new CliUsageError('check requires --resume <path>')
   const dir = flags['variants-dir'] ?? 'variants'
