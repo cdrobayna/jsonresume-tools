@@ -2,9 +2,10 @@ import { readFile, writeFile } from 'node:fs/promises'
 import path from 'node:path'
 import { CliUsageError, reportText } from '@jsonresume-tools/core'
 import { checkTailor } from './check.js'
-import { inspect } from './inspect.js'
+import { entryLabel, inspect } from './inspect.js'
 import { FILTERABLE_SECTIONS, TAGGABLE_FIELDS, tailor } from './tailor.js'
-import type { JsonResume, Variant } from './types/resume.js'
+import type { TailorSummary } from './tailor.js'
+import type { JsonResume, ResumeEntry, Variant } from './types/resume.js'
 import { loadVariant, loadVariants, ValidationError } from './variant.js'
 
 export interface CommandResult {
@@ -77,13 +78,48 @@ function isCommandResult(value: unknown): value is CommandResult {
   return typeof value === 'object' && value !== null && 'code' in value
 }
 
-/** `jsonresume-tailor build <variant> --resume <path> --out <path> [--variant-file <path>] [--dry-run] [--quiet]` */
+function formatSummary(
+  variantName: string,
+  summary: TailorSummary,
+  target: string,
+  verbose: boolean,
+  filteredResume: JsonResume
+): string[] {
+  const lines = [`[tailor] ${variantName} → ${target}`]
+  for (const [section, sectionSummary] of Object.entries(summary.sections)) {
+    const stats = Object.entries(sectionSummary.arrayStats ?? {})
+      .map(([field, { before, after }]) => `${field}: ${before} → ${after}`)
+      .join(', ')
+    const extra = stats ? ` (${stats})` : ''
+    lines.push(`[tailor] ${section}: ${sectionSummary.before} → ${sectionSummary.after} entries${extra}`)
+
+    if (verbose) {
+      const entries = filteredResume[section]
+      if (Array.isArray(entries)) {
+        for (const entry of entries as ResumeEntry[]) {
+          const label = entryLabel(entry, section)
+          const extras: string[] = []
+          for (const { field } of TAGGABLE_FIELDS) {
+            const values = entry[field]
+            if (Array.isArray(values) && values.length > 0) {
+              extras.push(`${values.length} ${field}`)
+            }
+          }
+          const suffix = extras.length > 0 ? ` (${extras.join(', ')})` : ''
+          lines.push(`[tailor]   - ${label}${suffix}`)
+        }
+      }
+    }
+  }
+  return lines
+}
+
 export async function runBuild(argv: string[]): Promise<CommandResult> {
   const { positional, flags, booleans } = parseFlags(
     argv,
     ['resume', 'out', 'variant-file'],
-    ['dry-run', 'quiet'],
-    { r: 'resume', o: 'out', n: 'dry-run', q: 'quiet' }
+    ['dry-run', 'quiet', 'verbose'],
+    { r: 'resume', o: 'out', n: 'dry-run', q: 'quiet', v: 'verbose' }
   )
 
   const [variantName] = positional
@@ -92,6 +128,7 @@ export async function runBuild(argv: string[]): Promise<CommandResult> {
   const dryRun = booleans.has('dry-run')
   if (!dryRun && !flags.out) throw new CliUsageError('build requires --out <path> (unless --dry-run)')
   const quiet = booleans.has('quiet')
+  const verbose = booleans.has('verbose')
 
   const resumeOrError = await readResume(flags.resume)
   if (isCommandResult(resumeOrError)) return resumeOrError
@@ -103,7 +140,7 @@ export async function runBuild(argv: string[]): Promise<CommandResult> {
     variant = await loadVariant(variantPath)
   } catch (err) {
     if (err instanceof ValidationError) return { code: 1, stderr: err.message }
-    throw err // CliUsageError (missing variant file) bubbles up to exit 2
+    throw err
   }
 
   const warnings: string[] = []
@@ -113,14 +150,8 @@ export async function runBuild(argv: string[]): Promise<CommandResult> {
     onWarning: (message) => warnings.push(message)
   })
 
-  const lines = [`[tailor] ${variant.name} → ${dryRun ? '(dry run)' : flags.out}`]
-  for (const [section, sectionSummary] of Object.entries(summary.sections)) {
-    const stats = Object.entries(sectionSummary.arrayStats ?? {})
-      .map(([field, { before, after }]) => `${field}: ${before} → ${after}`)
-      .join(', ')
-    const extra = stats ? ` (${stats})` : ''
-    lines.push(`[tailor] ${section}: ${sectionSummary.before} → ${sectionSummary.after} entries${extra}`)
-  }
+  const target = dryRun ? '(dry run)' : (flags.out as string)
+  const lines = formatSummary(variant.name, summary, target, verbose, output)
 
   if (!dryRun) {
     await writeFile(flags.out as string, `${JSON.stringify(output, null, 2)}\n`, 'utf8')

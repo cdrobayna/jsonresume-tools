@@ -17,6 +17,7 @@ build:
     -r, --resume <path>       Master resume to filter (required)
     -o, --out <path>          Where to write the filtered resume (required unless -n)
     --variant-file <path>     Explicit variant path (default: variants/<variant>.json)
+    -v, --verbose             Show which entries survived per section
     -n, --dry-run             Print the summary without writing the output
     -q, --quiet               Silence basics-override warnings
 

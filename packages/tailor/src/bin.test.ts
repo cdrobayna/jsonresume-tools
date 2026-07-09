@@ -80,6 +80,25 @@ describe('runBuild', () => {
     expect(result.stderr).toBeUndefined()
   })
 
+  it('--verbose shows entry names per section', async () => {
+    const out = await tempOutPath()
+    const result = await runBuild([
+      'backend', '-r', MASTER, '--variant-file', BACKEND_VARIANT, '-o', out, '-q', '-v'
+    ])
+    expect(result.code).toBe(0)
+    expect(result.stdout).toContain('[tailor]   -')
+    expect(result.stdout).toContain('Northwind Traders')
+  })
+
+  it('without --verbose, does not show individual entry names', async () => {
+    const out = await tempOutPath()
+    const result = await runBuild([
+      'backend', '-r', MASTER, '--variant-file', BACKEND_VARIANT, '-o', out, '-q'
+    ])
+    expect(result.code).toBe(0)
+    expect(result.stdout).not.toContain('[tailor]   -')
+  })
+
   it('without --quiet, reports the basics-override warning on stderr', async () => {
     const out = await tempOutPath()
     const result = await runBuild(['backend', '--resume', MASTER, '--variant-file', BACKEND_VARIANT, '--out', out])
