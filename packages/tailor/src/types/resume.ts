@@ -23,6 +23,13 @@ export interface TailorMeta {
    */
   keywordTags?: Record<string, number[]>
   /**
+   * Per-tag subset of `courses` indices to emit. Same shape and semantics as `highlightTags`
+   * (including the universal `"*"` key), applied to `courses` — lets one education entry show
+   * only the courses relevant to the active variant.
+   * Entries without this map emit all courses.
+   */
+  courseTags?: Record<string, number[]>
+  /**
    * Per-tag override for the entry's label field (skills -> name, work -> position,
    * projects -> name). Silently ignored where the section has no mapped field.
    */
@@ -42,6 +49,7 @@ export interface ResumeEntry {
   meta?: Meta
   highlights?: string[]
   keywords?: string[]
+  courses?: string[]
   name?: string
   position?: string
   [key: string]: unknown

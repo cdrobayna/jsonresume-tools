@@ -1,10 +1,11 @@
 import { createResult, emit, type Result, type RuleSeverities, type Severity } from '@jsonresume-tools/core'
-import { FILTERABLE_SECTIONS, tailor } from './tailor.js'
+import { FILTERABLE_SECTIONS, TAGGABLE_FIELDS, tailor } from './tailor.js'
 import type { JsonResume, ResumeEntry, Variant } from './types/resume.js'
 
 export type TailorCheckRuleName =
   | 'tailorHighlightIndex'
   | 'tailorKeywordIndex'
+  | 'tailorCourseIndex'
   | 'tailorEmptyTags'
   | 'tailorTagShape'
   | 'tailorOrphanTag'
@@ -13,9 +14,7 @@ export type TailorCheckRuleName =
 
 export const defaults = {
   rules: {
-    // Out-of-range highlight/keyword indices are hard errors — everything else is advisory.
-    tailorHighlightIndex: 'error',
-    tailorKeywordIndex: 'error',
+    ...Object.fromEntries(TAGGABLE_FIELDS.map(({ ruleName }) => [ruleName, 'error' as Severity])),
     tailorEmptyTags: 'warn',
     tailorTagShape: 'warn',
     tailorOrphanTag: 'warn',
@@ -28,8 +27,7 @@ function asEntries(value: unknown): ResumeEntry[] | undefined {
   return Array.isArray(value) ? (value as ResumeEntry[]) : undefined
 }
 
-/** Flags any index in `tagIndices` (`highlightTags` or `keywordTags`) that falls outside
- * `values`'s bounds. Shared by the `highlightTags`/`keywordTags` checks below. */
+/** Flags any index in `tagIndices` that falls outside `values`'s bounds. */
 function checkTagIndices(
   values: unknown[] | undefined,
   tagIndices: Record<string, number[]> | undefined,
@@ -52,8 +50,8 @@ function checkTagIndices(
   }
 }
 
-/** Entry-level coherence: tag shape, empty tags, out-of-range `highlightTags`/`keywordTags`
- * indices. Also collects every tag actually used, for the resume/variant cross-check below. */
+/** Entry-level coherence: tag shape, empty tags, out-of-range tag-index maps.
+ * Also collects every tag actually used, for the resume/variant cross-check below. */
 function checkEntries(resume: JsonResume, result: Result, rules: RuleSeverities): Set<string> {
   const tagsUsed = new Set<string>()
 
@@ -76,28 +74,19 @@ function checkEntries(resume: JsonResume, result: Result, rules: RuleSeverities)
         for (const tag of tags) tagsUsed.add(tag)
       }
 
-      checkTagIndices(
-        entry.highlights,
-        tailorMeta.highlightTags,
-        path,
-        'highlightTags',
-        'highlight',
-        'tailorHighlightIndex',
-        'TAILOR_HIGHLIGHT_INDEX',
-        result,
-        rules
-      )
-      checkTagIndices(
-        entry.keywords,
-        tailorMeta.keywordTags,
-        path,
-        'keywordTags',
-        'keyword',
-        'tailorKeywordIndex',
-        'TAILOR_KEYWORD_INDEX',
-        result,
-        rules
-      )
+      for (const { field, metaKey, label, ruleName, code } of TAGGABLE_FIELDS) {
+        checkTagIndices(
+          entry[field] as unknown[] | undefined,
+          tailorMeta[metaKey] as Record<string, number[]> | undefined,
+          path,
+          metaKey,
+          label,
+          ruleName as TailorCheckRuleName,
+          code,
+          result,
+          rules
+        )
+      }
     })
   }
 
@@ -152,8 +141,8 @@ function checkVariants(resume: JsonResume, variants: Variant[], tagsUsed: Set<st
 
 /**
  * Cross-checks a master resume's `meta.tailor` annotations against a set of variants.
- * Entry-level: tag shape, empty tags, out-of-range `highlightTags`/`keywordTags` indices (the
- * hard errors). Resume/variant: tags with no covering variant, variants that match no entry, and
+ * Entry-level: tag shape, empty tags, out-of-range tag-index maps (the hard errors).
+ * Resume/variant: tags with no covering variant, variants that match no entry, and
  * sections a variant leaves empty without explicitly dropping them.
  */
 export function checkTailor(resume: JsonResume, variants: Variant[]): Result {

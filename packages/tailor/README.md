@@ -23,6 +23,7 @@ interface TailorMeta {
   tags?: string[]                           // tags that include this entry
   highlightTags?: Record<string, number[]>  // { tag: [highlight indices] }
   keywordTags?: Record<string, number[]>    // { tag: [keyword indices] }
+  courseTags?: Record<string, number[]>     // { tag: [course indices] }
   labelPerTag?: Record<string, string>      // override of "name"/"position" per tag
 }
 ```
@@ -37,6 +38,9 @@ interface TailorMeta {
   key), applied to `keywords` instead of `highlights`. Lets one mixed-stack `skills` or `projects`
   entry (e.g. a single "Backend" skill covering both Node.js and PHP keywords) show only the
   keywords relevant to the active variant, instead of having to split it into separate entries.
+- **`courseTags`** — same shape and semantics, applied to `courses` on `education` entries. Lets
+  one education entry show only the courses relevant to the active variant (e.g. CS courses for a
+  dev role, statistics courses for a data science role).
 - **`labelPerTag`** — optional override of the entry's label field per active tag
   (`skills → name`, `work → position`, `projects → name`). Silently ignored elsewhere.
 
@@ -111,6 +115,25 @@ interface TailorMeta {
 }
 ```
 
+**Education entry, filtering courses per tag:**
+
+```json
+{
+  "institution": "MIT",
+  "area": "Computer Science",
+  "courses": ["CS101 Intro to CS", "CS201 Algorithms", "STAT200 Statistics", "STAT301 Machine Learning"],
+  "meta": {
+    "tailor": {
+      "tags": ["dev", "data"],
+      "courseTags": {
+        "dev": [0, 1],
+        "data": [2, 3]
+      }
+    }
+  }
+}
+```
+
 ## Declaring a variant
 
 A variant is a small JSON file (conventionally `variants/<name>.json`, though the CLI accepts any
@@ -178,7 +201,8 @@ jsonresume-tailor check backend --resume resume.en.json   # a single variant
 ```
 [tailor] backend → resume.backend.en.json
 [tailor] work: 7 → 4 entries (highlights: 20 → 14)
-[tailor] skills: 4 → 3 entries
+[tailor] skills: 4 → 3 entries (keywords: 16 → 10)
+[tailor] education: 2 → 1 entries (courses: 8 → 4)
 ```
 
 Exit codes: `0` success · `1` validation error (invalid variant/resume, out-of-range highlight
@@ -195,7 +219,7 @@ const { resume, summary } = tailor(masterResume, variant, {
   onWarning: (message) => console.warn(message)
 })
 // resume: filtered, canonical JSON Resume — no meta.tailor left
-// summary: { sections: { work: { before, after, highlightsBefore?, highlightsAfter? }, ... }, warnings }
+// summary: { sections: { work: { before, after, arrayStats? }, ... }, warnings }
 
 // Cross-check the master resume's annotations against a set of variants
 const result = checkTailor(masterResume, [variant])
@@ -211,6 +235,7 @@ changed.
 | ------------------------ | ------- | ---------------------------------------------------------------------- |
 | `tailorHighlightIndex`  | error   | A `highlightTags` index is out of range for the entry's `highlights`  |
 | `tailorKeywordIndex`    | error   | A `keywordTags` index is out of range for the entry's `keywords`      |
+| `tailorCourseIndex`     | error   | A `courseTags` index is out of range for the entry's `courses`        |
 | `tailorEmptyTags`       | warn    | `meta.tailor` is present but `tags` is empty or missing               |
 | `tailorTagShape`        | warn    | `tags` isn't an array of strings                                      |
 | `tailorOrphanTag`       | warn    | A tag is used in the resume but no variant declares it                |

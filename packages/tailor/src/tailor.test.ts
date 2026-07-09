@@ -109,6 +109,61 @@ describe('tailor', () => {
     expect((result.resume.skills as any[])[0].keywords).toEqual(['Node.js'])
   })
 
+  it('emits all courses when courseTags is absent', () => {
+    const resume: JsonResume = {
+      education: [{ institution: 'MIT', courses: ['CS101', 'STAT200', 'ML301'], meta: { tailor: { tags: ['dev'] } } }]
+    }
+    const result = tailor(resume, makeVariant({ tag: 'dev' }))
+    expect((result.resume.education as any[])[0].courses).toEqual(['CS101', 'STAT200', 'ML301'])
+  })
+
+  it('unions "*" with active-tag courseTags, preserving original order without duplicates', () => {
+    const resume: JsonResume = {
+      education: [
+        {
+          institution: 'MIT',
+          courses: ['CS101', 'CS201', 'STAT200', 'STAT301'],
+          meta: {
+            tailor: {
+              tags: ['dev', 'data'],
+              courseTags: { '*': [0], dev: [0, 1], data: [2, 3] }
+            }
+          }
+        }
+      ]
+    }
+    const result = tailor(resume, makeVariant({ tag: 'dev' }))
+    expect((result.resume.education as any[])[0].courses).toEqual(['CS101', 'CS201'])
+  })
+
+  it('silently ignores out-of-range course indices', () => {
+    const resume: JsonResume = {
+      education: [
+        {
+          institution: 'MIT',
+          courses: ['CS101', 'CS201'],
+          meta: { tailor: { tags: ['dev'], courseTags: { dev: [0, 8] } } }
+        }
+      ]
+    }
+    const result = tailor(resume, makeVariant({ tag: 'dev' }))
+    expect((result.resume.education as any[])[0].courses).toEqual(['CS101'])
+  })
+
+  it('summary includes arrayStats for sections with taggable arrays', () => {
+    const resume: JsonResume = {
+      work: [
+        { name: 'A', highlights: ['h0', 'h1', 'h2'], meta: { tailor: { tags: ['v'], highlightTags: { v: [0] } } } }
+      ],
+      skills: [
+        { name: 'B', keywords: ['k0', 'k1'], meta: { tailor: { tags: ['v'], keywordTags: { v: [1] } } } }
+      ]
+    }
+    const result = tailor(resume, makeVariant())
+    expect(result.summary.sections.work.arrayStats).toEqual({ highlights: { before: 3, after: 1 } })
+    expect(result.summary.sections.skills.arrayStats).toEqual({ keywords: { before: 2, after: 1 } })
+  })
+
   it('labelPerTag: the primary tag wins over secondaries', () => {
     const resume: JsonResume = {
       skills: [
