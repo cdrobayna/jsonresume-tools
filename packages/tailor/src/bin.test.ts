@@ -4,7 +4,7 @@ import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import jsonResumeSchema from '@jsonresume/schema'
 import { afterEach, describe, expect, it } from 'vitest'
-import { runBuild, runCheck, runList } from './commands.js'
+import { runBuild, runCheck, runInspect, runList } from './commands.js'
 
 const FIXTURES_DIR = fileURLToPath(new URL('../fixtures', import.meta.url))
 const MASTER = path.join(FIXTURES_DIR, 'master.json')
@@ -124,6 +124,37 @@ describe('runList', () => {
     for (const name of ['backend', 'devops', 'sysadmin', 'short']) {
       expect(result.stdout).toContain(name)
     }
+  })
+})
+
+describe('runInspect', () => {
+  it('text format shows indexed highlights and tag maps', async () => {
+    const result = await runInspect(['-r', MASTER])
+    expect(result.code).toBe(0)
+    expect(result.stdout).toContain('work[0]')
+    expect(result.stdout).toContain('[0]')
+    expect(result.stdout).toContain('tags:')
+  })
+
+  it('--section filters to one section', async () => {
+    const result = await runInspect(['-r', MASTER, '-s', 'skills'])
+    expect(result.code).toBe(0)
+    expect(result.stdout).toContain('skills[')
+    expect(result.stdout).not.toContain('work[')
+  })
+
+  it('json format produces parseable output', async () => {
+    const result = await runInspect(['-r', MASTER, '-f', 'json'])
+    expect(result.code).toBe(0)
+    const parsed = JSON.parse(result.stdout!)
+    expect(Array.isArray(parsed)).toBe(true)
+    expect(parsed[0]).toHaveProperty('section')
+    expect(parsed[0]).toHaveProperty('label')
+    expect(parsed[0]).toHaveProperty('taggableFields')
+  })
+
+  it('unknown section throws CliUsageError', async () => {
+    await expect(runInspect(['-r', MASTER, '-s', 'bogus'])).rejects.toThrow('unknown section')
   })
 })
 

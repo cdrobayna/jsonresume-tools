@@ -2,7 +2,8 @@ import { readFile, writeFile } from 'node:fs/promises'
 import path from 'node:path'
 import { CliUsageError, reportText } from '@jsonresume-tools/core'
 import { checkTailor } from './check.js'
-import { tailor } from './tailor.js'
+import { inspect } from './inspect.js'
+import { FILTERABLE_SECTIONS, TAGGABLE_FIELDS, tailor } from './tailor.js'
 import type { JsonResume, Variant } from './types/resume.js'
 import { loadVariant, loadVariants, ValidationError } from './variant.js'
 
@@ -175,4 +176,58 @@ export async function runCheck(argv: string[]): Promise<CommandResult> {
   const result = checkTailor(resume, variants)
   const hasErrors = result.errors.length > 0
   return { code: hasErrors ? 1 : 0, stdout: reportText(result) }
+}
+
+/** `jsonresume-tailor inspect --resume <path> [--section <name>] [--format text|json]` */
+export async function runInspect(argv: string[]): Promise<CommandResult> {
+  const { flags } = parseFlags(argv, ['resume', 'section', 'format'], [], { r: 'resume', s: 'section', f: 'format' })
+
+  if (!flags.resume) throw new CliUsageError('inspect requires --resume <path>')
+  const format = flags.format ?? 'text'
+  if (format !== 'text' && format !== 'json') {
+    throw new CliUsageError('--format must be "text" or "json"')
+  }
+  const sectionFilter = flags.section
+  if (sectionFilter && !(FILTERABLE_SECTIONS as readonly string[]).includes(sectionFilter)) {
+    throw new CliUsageError(`unknown section: ${sectionFilter}. Valid: ${FILTERABLE_SECTIONS.join(', ')}`)
+  }
+
+  const resumeOrError = await readResume(flags.resume)
+  if (isCommandResult(resumeOrError)) return resumeOrError
+
+  const entries = inspect(resumeOrError, sectionFilter)
+
+  if (format === 'json') {
+    return { code: 0, stdout: JSON.stringify(entries, null, 2) }
+  }
+
+  const lines: string[] = []
+  for (const entry of entries) {
+    lines.push(`${entry.section}[${entry.index}] ${entry.label}`)
+    if (entry.tags.length > 0) {
+      lines.push(`  tags: ${entry.tags.join(', ')}`)
+    }
+    for (const [field, values] of Object.entries(entry.taggableFields)) {
+      lines.push(`  ${field}:`)
+      values.forEach((value, i) => {
+        lines.push(`    [${i}] ${value}`)
+      })
+      const metaKey = TAGGABLE_FIELDS.find((t) => t.field === field)?.metaKey
+      if (metaKey && entry.tagMaps[metaKey]) {
+        lines.push(`  ${metaKey}:`)
+        for (const [tag, indices] of Object.entries(entry.tagMaps[metaKey])) {
+          lines.push(`    ${tag}: [${indices.join(', ')}]`)
+        }
+      }
+    }
+    if (entry.labelPerTag) {
+      lines.push('  labelPerTag:')
+      for (const [tag, label] of Object.entries(entry.labelPerTag)) {
+        lines.push(`    ${tag}: "${label}"`)
+      }
+    }
+    lines.push('')
+  }
+
+  return { code: 0, stdout: lines.join('\n').trimEnd() }
 }
