@@ -1,11 +1,11 @@
-import { readFile, writeFile } from 'node:fs/promises'
+import { mkdir, readdir, readFile, writeFile } from 'node:fs/promises'
 import path from 'node:path'
 import { CliUsageError, reportText } from '@jsonresume-tools/core'
 import { checkTailor } from './check.js'
 import { entryLabel, inspect } from './inspect.js'
 import { FILTERABLE_SECTIONS, TAGGABLE_FIELDS, tailor } from './tailor.js'
-import type { TailorSummary } from './tailor.js'
 import type { JsonResume, ResumeEntry, Variant } from './types/resume.js'
+import type { TailorSummary } from './tailor.js'
 import { loadVariant, loadVariants, ValidationError } from './variant.js'
 
 export interface CommandResult {
@@ -114,25 +114,48 @@ function formatSummary(
   return lines
 }
 
+const LOCALE_RE = /\.([A-Za-z]{2,3}(?:-[A-Za-z]{2,4})?)\.json$/
+
+function extractLocale(filePath: string): string | undefined {
+  return LOCALE_RE.exec(path.basename(filePath))?.[1]
+}
+
+function outFilename(variantSlug: string, locale: string | undefined): string {
+  return locale ? `${variantSlug}.${locale}.json` : `${variantSlug}.json`
+}
+
 export async function runBuild(argv: string[]): Promise<CommandResult> {
   const { positional, flags, booleans } = parseFlags(
     argv,
-    ['resume', 'out', 'variant-file'],
+    ['resume', 'out', 'variant-file', 'variants-dir', 'out-dir'],
     ['dry-run', 'quiet', 'verbose'],
-    { r: 'resume', o: 'out', n: 'dry-run', q: 'quiet', v: 'verbose' }
+    { r: 'resume', o: 'out', O: 'out-dir', d: 'variants-dir', n: 'dry-run', q: 'quiet', v: 'verbose' }
   )
 
-  const [variantName] = positional
-  if (!variantName) throw new CliUsageError('build requires a <variant> argument, e.g. "build backend"')
   if (!flags.resume) throw new CliUsageError('build requires --resume <path>')
   const dryRun = booleans.has('dry-run')
-  if (!dryRun && !flags.out) throw new CliUsageError('build requires --out <path> (unless --dry-run)')
   const quiet = booleans.has('quiet')
   const verbose = booleans.has('verbose')
+  const batchMode = !!flags['variants-dir']
+
+  const [variantName] = positional
+
+  if (batchMode) {
+    if (variantName) throw new CliUsageError('--variants-dir cannot be combined with a positional <variant>')
+    if (flags['variant-file']) throw new CliUsageError('--variants-dir cannot be combined with --variant-file')
+    if (!dryRun && !flags['out-dir']) throw new CliUsageError('batch build requires --out-dir <path> (unless --dry-run)')
+  } else {
+    if (!variantName) throw new CliUsageError('build requires a <variant> argument, e.g. "build backend"')
+    if (!dryRun && !flags.out) throw new CliUsageError('build requires --out <path> (unless --dry-run)')
+  }
 
   const resumeOrError = await readResume(flags.resume)
   if (isCommandResult(resumeOrError)) return resumeOrError
   const resume = resumeOrError
+
+  if (batchMode) {
+    return runBatchBuild(flags['variants-dir'], resume, flags.resume, flags['out-dir'], dryRun, quiet, verbose)
+  }
 
   const variantPath = flags['variant-file'] ?? path.join('variants', `${variantName}.json`)
   let variant: Variant
@@ -161,6 +184,74 @@ export async function runBuild(argv: string[]): Promise<CommandResult> {
     code: 0,
     stdout: lines.join('\n'),
     stderr: quiet || warnings.length === 0 ? undefined : warnings.join('\n')
+  }
+}
+
+async function runBatchBuild(
+  variantsDir: string,
+  resume: JsonResume,
+  resumePath: string,
+  outDir: string | undefined,
+  dryRun: boolean,
+  quiet: boolean,
+  verbose: boolean
+): Promise<CommandResult> {
+  let filenames: string[]
+  try {
+    filenames = await readdir(variantsDir)
+  } catch (err) {
+    if (isEnoent(err)) throw new CliUsageError(`variants directory not found: ${variantsDir}`)
+    throw err
+  }
+
+  const jsonFiles = filenames.filter((name) => name.endsWith('.json')).sort()
+  if (jsonFiles.length === 0) {
+    return { code: 0, stdout: `no variants found in ${variantsDir}` }
+  }
+
+  if (!dryRun && outDir) {
+    await mkdir(outDir, { recursive: true })
+  }
+
+  const locale = extractLocale(resumePath)
+  const allLines: string[] = []
+  const allWarnings: string[] = []
+
+  for (const filename of jsonFiles) {
+    const variantPath = path.join(variantsDir, filename)
+    let variant: Variant
+    try {
+      variant = await loadVariant(variantPath)
+    } catch (err) {
+      if (err instanceof ValidationError) return { code: 1, stderr: err.message }
+      throw err
+    }
+
+    const warnings: string[] = []
+    const { resume: output, summary } = tailor(resume, variant, {
+      quiet,
+      input: resumePath,
+      onWarning: (msg) => warnings.push(msg)
+    })
+
+    const slug = filename.replace(/\.json$/, '')
+    const outName = outFilename(slug, locale)
+    const outPath = outDir ? path.join(outDir, outName) : undefined
+    const target = dryRun ? '(dry run)' : (outPath ?? outName)
+
+    allLines.push(...formatSummary(variant.name, summary, target, verbose, output))
+
+    if (!dryRun && outPath) {
+      await writeFile(outPath, `${JSON.stringify(output, null, 2)}\n`, 'utf8')
+    }
+
+    allWarnings.push(...warnings)
+  }
+
+  return {
+    code: 0,
+    stdout: allLines.join('\n'),
+    stderr: quiet || allWarnings.length === 0 ? undefined : allWarnings.join('\n')
   }
 }
 

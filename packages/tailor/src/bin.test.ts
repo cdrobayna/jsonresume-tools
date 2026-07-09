@@ -1,4 +1,4 @@
-import { mkdtemp, readFile, rm } from 'node:fs/promises'
+import { mkdtemp, readdir, readFile, rm } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -103,6 +103,65 @@ describe('runBuild', () => {
     const out = await tempOutPath()
     const result = await runBuild(['backend', '--resume', MASTER, '--variant-file', BACKEND_VARIANT, '--out', out])
     expect(result.stderr).toContain('overriding basics.summary')
+  })
+
+  it('batch mode: -d builds all variants into -O', async () => {
+    const dir = await mkdtemp(path.join(tmpdir(), 'jsonresume-tailor-test-'))
+    dirs.push(dir)
+    const result = await runBuild(['-d', VARIANTS_DIR, '-r', MASTER, '-O', dir, '-q'])
+
+    expect(result.code).toBe(0)
+    const files = (await readdir(dir)).sort()
+    expect(files).toEqual(['backend.json', 'devops.json', 'short.json', 'sysadmin.json'])
+
+    const written = JSON.parse(await readFile(path.join(dir, 'backend.json'), 'utf8'))
+    expect(written.work).toHaveLength(4)
+  })
+
+  it('batch mode: locale extracted from resume filename', async () => {
+    const dir = await mkdtemp(path.join(tmpdir(), 'jsonresume-tailor-test-'))
+    dirs.push(dir)
+    const localeResume = path.join(dir, 'resume.en.json')
+    const content = await readFile(MASTER, 'utf8')
+    const { writeFile: wf } = await import('node:fs/promises')
+    await wf(localeResume, content)
+
+    const outDir = path.join(dir, 'out')
+    const result = await runBuild(['-d', VARIANTS_DIR, '-r', localeResume, '-O', outDir, '-q'])
+    expect(result.code).toBe(0)
+    const files = (await readdir(outDir)).sort()
+    expect(files[0]).toBe('backend.en.json')
+  })
+
+  it('batch mode: --dry-run prints summaries without writing files', async () => {
+    const result = await runBuild(['-d', VARIANTS_DIR, '-r', MASTER, '-n', '-q'])
+    expect(result.code).toBe(0)
+    expect(result.stdout).toContain('(dry run)')
+    expect(result.stdout).toContain('work:')
+  })
+
+  it('batch mode: errors when combining -d with positional variant', async () => {
+    await expect(runBuild(['-d', VARIANTS_DIR, 'backend', '-r', MASTER, '-O', '/tmp/x']))
+      .rejects.toThrow('cannot be combined')
+  })
+
+  it('batch mode: errors when combining -d with --variant-file', async () => {
+    await expect(runBuild(['-d', VARIANTS_DIR, '--variant-file', BACKEND_VARIANT, '-r', MASTER, '-O', '/tmp/x']))
+      .rejects.toThrow('cannot be combined')
+  })
+
+  it('batch mode: empty dir returns no variants message', async () => {
+    const dir = await mkdtemp(path.join(tmpdir(), 'jsonresume-tailor-test-'))
+    dirs.push(dir)
+    const result = await runBuild(['-d', dir, '-r', MASTER, '-O', dir])
+    expect(result.code).toBe(0)
+    expect(result.stdout).toContain('no variants found')
+  })
+
+  it('batch mode: verbose shows entry names', async () => {
+    const result = await runBuild(['-d', VARIANTS_DIR, '-r', MASTER, '-n', '-q', '-v'])
+    expect(result.code).toBe(0)
+    expect(result.stdout).toContain('[tailor]   -')
   })
 
   it('produces a resume that validates against the official JSON Resume schema, has no tailor key, filters ' +

@@ -12,13 +12,22 @@ Commands:
   list              List the variants found in a variants directory
   check [<variant>] Check meta.tailor annotations for coherence against the variants
 
-build:
+build (single):
   jrt build <variant>
     -r, --resume <path>       Master resume to filter (required)
     -o, --out <path>          Where to write the filtered resume (required unless -n)
     --variant-file <path>     Explicit variant path (default: variants/<variant>.json)
     -v, --verbose             Show which entries survived per section
     -n, --dry-run             Print the summary without writing the output
+    -q, --quiet               Silence basics-override warnings
+
+build (batch):
+  jrt build -d <path>
+    -r, --resume <path>       Master resume to filter (required)
+    -d, --variants-dir <path> Directory of variant files to build
+    -O, --out-dir <path>      Output directory (required unless -n)
+    -v, --verbose             Show which entries survived per section
+    -n, --dry-run             Print summaries without writing files
     -q, --quiet               Silence basics-override warnings
 
 inspect:
@@ -38,6 +47,7 @@ check:
 
 Examples:
   jrt build backend -r resume.en.json -o resume.backend.en.json
+  jrt build -d variants/ -r resume.en.json -O dist/ -v
   jrt inspect -r resume.json -s work
   jrt list
   jrt check -r resume.en.json
