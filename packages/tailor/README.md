@@ -22,6 +22,7 @@ JSON Resume.
 interface TailorMeta {
   tags?: string[]                           // tags that include this entry
   highlightTags?: Record<string, number[]>  // { tag: [highlight indices] }
+  keywordTags?: Record<string, number[]>    // { tag: [keyword indices] }
   labelPerTag?: Record<string, string>      // override of "name"/"position" per tag
 }
 ```
@@ -32,6 +33,10 @@ interface TailorMeta {
 - **`highlightTags`** — optional, only meaningful on entries with a `highlights` array. If
   omitted, all highlights are emitted (mixed-role entries are the only ones that need this map).
   The `"*"` key is universal: those indices are emitted for every variant.
+- **`keywordTags`** — same shape and semantics as `highlightTags` (including the universal `"*"`
+  key), applied to `keywords` instead of `highlights`. Lets one mixed-stack `skills` or `projects`
+  entry (e.g. a single "Backend" skill covering both Node.js and PHP keywords) show only the
+  keywords relevant to the active variant, instead of having to split it into separate entries.
 - **`labelPerTag`** — optional override of the entry's label field per active tag
   (`skills → name`, `work → position`, `projects → name`). Silently ignored elsewhere.
 
@@ -83,6 +88,24 @@ interface TailorMeta {
     "tailor": {
       "tags": ["short", "backend"],
       "labelPerTag": { "backend": "Core Backend Stack" }
+    }
+  }
+}
+```
+
+**Mixed-stack skill, filtering keywords per tag:**
+
+```json
+{
+  "name": "Backend",
+  "keywords": ["Node.js", "TypeScript", "NestJS", "PHP", "Laravel", "FilamentPHP"],
+  "meta": {
+    "tailor": {
+      "tags": ["node-ts", "laravel"],
+      "keywordTags": {
+        "node-ts": [0, 1, 2],
+        "laravel": [3, 4, 5]
+      }
     }
   }
 }
@@ -187,6 +210,7 @@ changed.
 | Rule                    | Default | Description                                                          |
 | ------------------------ | ------- | ---------------------------------------------------------------------- |
 | `tailorHighlightIndex`  | error   | A `highlightTags` index is out of range for the entry's `highlights`  |
+| `tailorKeywordIndex`    | error   | A `keywordTags` index is out of range for the entry's `keywords`      |
 | `tailorEmptyTags`       | warn    | `meta.tailor` is present but `tags` is empty or missing               |
 | `tailorTagShape`        | warn    | `tags` isn't an array of strings                                      |
 | `tailorOrphanTag`       | warn    | A tag is used in the resume but no variant declares it                |

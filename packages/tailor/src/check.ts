@@ -4,6 +4,7 @@ import type { JsonResume, ResumeEntry, Variant } from './types/resume.js'
 
 export type TailorCheckRuleName =
   | 'tailorHighlightIndex'
+  | 'tailorKeywordIndex'
   | 'tailorEmptyTags'
   | 'tailorTagShape'
   | 'tailorOrphanTag'
@@ -12,8 +13,9 @@ export type TailorCheckRuleName =
 
 export const defaults = {
   rules: {
-    // Out-of-range highlight indices are the one hard error — everything else is advisory.
+    // Out-of-range highlight/keyword indices are hard errors — everything else is advisory.
     tailorHighlightIndex: 'error',
+    tailorKeywordIndex: 'error',
     tailorEmptyTags: 'warn',
     tailorTagShape: 'warn',
     tailorOrphanTag: 'warn',
@@ -26,8 +28,32 @@ function asEntries(value: unknown): ResumeEntry[] | undefined {
   return Array.isArray(value) ? (value as ResumeEntry[]) : undefined
 }
 
-/** Entry-level coherence: tag shape, empty tags, out-of-range `highlightTags` indices. Also
- * collects every tag actually used, for the resume/variant cross-check below. */
+/** Flags any index in `tagIndices` (`highlightTags` or `keywordTags`) that falls outside
+ * `values`'s bounds. Shared by the `highlightTags`/`keywordTags` checks below. */
+function checkTagIndices(
+  values: unknown[] | undefined,
+  tagIndices: Record<string, number[]> | undefined,
+  path: string,
+  mapField: string,
+  itemLabel: string,
+  ruleName: TailorCheckRuleName,
+  code: string,
+  result: Result,
+  rules: RuleSeverities
+): void {
+  const length = Array.isArray(values) ? values.length : 0
+  for (const [tag, indices] of Object.entries(tagIndices ?? {})) {
+    if (!Array.isArray(indices)) continue
+    for (const idx of indices) {
+      if (idx < 0 || idx >= length) {
+        emit(result, rules, ruleName, code, `${path}.${mapField}.${tag}`, `${itemLabel} index ${idx} is out of range (${itemLabel}s.length = ${length})`)
+      }
+    }
+  }
+}
+
+/** Entry-level coherence: tag shape, empty tags, out-of-range `highlightTags`/`keywordTags`
+ * indices. Also collects every tag actually used, for the resume/variant cross-check below. */
 function checkEntries(resume: JsonResume, result: Result, rules: RuleSeverities): Set<string> {
   const tagsUsed = new Set<string>()
 
@@ -50,22 +76,28 @@ function checkEntries(resume: JsonResume, result: Result, rules: RuleSeverities)
         for (const tag of tags) tagsUsed.add(tag)
       }
 
-      const highlightsLength = Array.isArray(entry.highlights) ? entry.highlights.length : 0
-      for (const [tag, indices] of Object.entries(tailorMeta.highlightTags ?? {})) {
-        if (!Array.isArray(indices)) continue
-        for (const idx of indices) {
-          if (idx < 0 || idx >= highlightsLength) {
-            emit(
-              result,
-              rules,
-              'tailorHighlightIndex',
-              'TAILOR_HIGHLIGHT_INDEX',
-              `${path}.highlightTags.${tag}`,
-              `highlight index ${idx} is out of range (highlights.length = ${highlightsLength})`
-            )
-          }
-        }
-      }
+      checkTagIndices(
+        entry.highlights,
+        tailorMeta.highlightTags,
+        path,
+        'highlightTags',
+        'highlight',
+        'tailorHighlightIndex',
+        'TAILOR_HIGHLIGHT_INDEX',
+        result,
+        rules
+      )
+      checkTagIndices(
+        entry.keywords,
+        tailorMeta.keywordTags,
+        path,
+        'keywordTags',
+        'keyword',
+        'tailorKeywordIndex',
+        'TAILOR_KEYWORD_INDEX',
+        result,
+        rules
+      )
     })
   }
 
@@ -120,9 +152,9 @@ function checkVariants(resume: JsonResume, variants: Variant[], tagsUsed: Set<st
 
 /**
  * Cross-checks a master resume's `meta.tailor` annotations against a set of variants.
- * Entry-level: tag shape, empty tags, out-of-range `highlightTags` indices (the one hard error).
- * Resume/variant: tags with no covering variant, variants that match no entry, and sections a
- * variant leaves empty without explicitly dropping them.
+ * Entry-level: tag shape, empty tags, out-of-range `highlightTags`/`keywordTags` indices (the
+ * hard errors). Resume/variant: tags with no covering variant, variants that match no entry, and
+ * sections a variant leaves empty without explicitly dropping them.
  */
 export function checkTailor(resume: JsonResume, variants: Variant[]): Result {
   const result = createResult()
