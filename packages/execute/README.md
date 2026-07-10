@@ -1,5 +1,6 @@
 # jsonresume-execute
 
+[![npm version](https://img.shields.io/npm/v/jsonresume-execute.svg)](https://www.npmjs.com/package/jsonresume-execute)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](../../LICENSE)
 
 `jrx` — a unified CLI that orchestrates [`jsonresume-lint`](../lint), [`jsonresume-parity`](../parity),
