@@ -3,7 +3,7 @@ import { loadConfig, readOwnVersion, report, runCli, type Severity } from '@json
 import { resolveLocaleInputs } from './cli-locale.js'
 import { checkParity, defaults } from './index.js'
 
-const HELP = `Usage: jsonresume-parity [options] <file...>
+const HELP = `Usage: jrp [options] <file...>    (alias: jsonresume-parity)
 
 Checks structural and content parity across locale variants of a JSON Resume.
 Files use the convention <anything>.<locale>.json (first file = baseline), or
@@ -17,10 +17,10 @@ Options:
   --version                  Show version number
 
 Examples:
-  jsonresume-parity resume.en.json resume.es.json
-  jsonresume-parity en=cv-main.json es=cv-espanol.json
-  jsonresume-parity --rule lengthRatio=off resume.en.json resume.es.json
-  jsonresume-parity --format json resume.en.json resume.es.json
+  jrp resume.en.json resume.es.json
+  jrp en=cv-main.json es=cv-espanol.json
+  jrp --rule lengthRatio=off resume.en.json resume.es.json
+  jrp --format json resume.en.json resume.es.json
 `
 
 function isSeverity(value: string): value is Severity {

@@ -2,7 +2,7 @@
 import { loadConfig, readOwnVersion, reportJson, reportText, runCli, type Severity } from '@jsonresume-tools/core'
 import { defaults, lint } from './index.js'
 
-const HELP = `Usage: jsonresume-lint [options] <file...>
+const HELP = `Usage: jrl [options] <file...>    (alias: jsonresume-lint)
 
 Runs per-file JSON Resume quality checks: date format and ordering, reverse-chronological
 work/education sections, valid URLs and email, leftover placeholders, and (opt-in) schema
@@ -16,10 +16,10 @@ Options:
   --version                  Show version number
 
 Examples:
-  jsonresume-lint resume.en.json
-  jsonresume-lint resume.en.json resume.es.json
-  jsonresume-lint --rule schema=error resume.en.json
-  jsonresume-lint --format json resume.en.json resume.es.json
+  jrl resume.en.json
+  jrl resume.en.json resume.es.json
+  jrl --rule schema=error resume.en.json
+  jrl --format json resume.en.json resume.es.json
 `
 
 function isSeverity(value: string): value is Severity {
