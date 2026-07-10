@@ -1,6 +1,6 @@
 {
   "name": "jsonresume-parity",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "Verify structural and content parity across locale variants of a JSON Resume (jsonresume.org).",
   "keywords": [
     "json resume",
