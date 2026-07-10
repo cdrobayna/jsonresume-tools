@@ -1,5 +1,8 @@
 # jsonresume-parity
 
+[![npm version](https://img.shields.io/npm/v/jsonresume-parity.svg)](https://www.npmjs.com/package/jsonresume-parity)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](../../LICENSE)
+
 Checks structural and content parity across locale variants of a [JSON Resume](https://jsonresume.org)
 (e.g. `resume.en.json` vs `resume.es.json`): matching shape, identical non-translatable fields
 (dates, URLs, emails, keywords), and translation-quality heuristics (length ratio, untranslated

@@ -1,5 +1,8 @@
 # jsonresume-tailor
 
+[![npm version](https://img.shields.io/npm/v/jsonresume-tailor.svg)](https://www.npmjs.com/package/jsonresume-tailor)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](../../LICENSE)
+
 Generate role-tailored variants of a [JSON Resume](https://jsonresume.org) from a single
 annotated master resume. Annotate `work`/`education`/`skills`/`projects`/`awards`/`certificates`/
 `publications`/`volunteer` entries with tags under `meta.tailor`, declare a variant per target
