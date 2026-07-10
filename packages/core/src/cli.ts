@@ -1,3 +1,7 @@
+import { readFileSync } from 'node:fs'
+import path from 'node:path'
+import { fileURLToPath } from 'node:url'
+
 export class CliUsageError extends Error {}
 
 export interface ParsedArgs {
@@ -6,6 +10,7 @@ export interface ParsedArgs {
   configPath?: string
   ruleOverrides: Record<string, string>
   help: boolean
+  version: boolean
 }
 
 /** Parses the shared CLI surface both `jsonresume-parity` and `jsonresume-lint` expose. */
@@ -15,11 +20,14 @@ export function parseArgs(argv: string[]): ParsedArgs {
   let format: 'text' | 'json' = 'text'
   let configPath: string | undefined
   let help = false
+  let version = false
 
   for (let i = 0; i < argv.length; i++) {
     const arg = argv[i]
     if (arg === '--help' || arg === '-h') {
       help = true
+    } else if (arg === '--version') {
+      version = true
     } else if (arg === '--format') {
       const value = argv[++i]
       if (value !== 'text' && value !== 'json') {
@@ -44,18 +52,20 @@ export function parseArgs(argv: string[]): ParsedArgs {
     }
   }
 
-  return { files, format, configPath, ruleOverrides, help }
+  return { files, format, configPath, ruleOverrides, help, version }
 }
 
 export interface RunCliOptions {
   name: string
   helpText: string
+  /** Printed on `--version`. Typically `readOwnVersion(import.meta.url)`. */
+  version?: string
   run: (args: ParsedArgs) => Promise<{ hasErrors: boolean; output: string }>
 }
 
 /**
- * Shared CLI entry point: parses argv, handles `--help` and usage errors, invokes `run`,
- * prints its output, and returns the process exit code (`0` clean, `1` errors present,
+ * Shared CLI entry point: parses argv, handles `--help`/`--version` and usage errors, invokes
+ * `run`, prints its output, and returns the process exit code (`0` clean, `1` errors present,
  * `2` misuse). Warnings alone never produce a non-zero exit.
  */
 export async function runCli(argv: string[], options: RunCliOptions): Promise<number> {
@@ -69,6 +79,11 @@ export async function runCli(argv: string[], options: RunCliOptions): Promise<nu
       return 2
     }
     throw err
+  }
+
+  if (args.version) {
+    console.log(options.version ?? '0.0.0')
+    return 0
   }
 
   if (args.help) {
@@ -92,14 +107,22 @@ export async function runCli(argv: string[], options: RunCliOptions): Promise<nu
   }
 }
 
+export interface CommandResult {
+  code: number
+  stdout?: string
+  stderr?: string
+}
+
 export interface Subcommand {
   describe: string
-  run: (argv: string[]) => Promise<{ code: number; stdout?: string; stderr?: string }>
+  run: (argv: string[]) => Promise<CommandResult>
 }
 
 export interface RunSubcommandCliOptions {
   name: string
   helpText: string
+  /** Printed on `--version`/`-V`. Typically `readOwnVersion(import.meta.url)`. */
+  version?: string
   commands: Record<string, Subcommand>
 }
 
@@ -118,6 +141,11 @@ export async function runSubcommandCli(argv: string[], options: RunSubcommandCli
 
   if (!cmd || cmd === '--help' || cmd === '-h') {
     console.log(options.helpText)
+    return 0
+  }
+
+  if (cmd === '--version' || cmd === '-V') {
+    console.log(options.version ?? '0.0.0')
     return 0
   }
 
@@ -141,4 +169,78 @@ export async function runSubcommandCli(argv: string[], options: RunSubcommandCli
     console.error(err instanceof Error ? err.message : String(err))
     return 2
   }
+}
+
+export interface ParsedFlags {
+  positional: string[]
+  flags: Record<string, string>
+  booleans: Set<string>
+}
+
+/**
+ * Generic flag parser for verb-style CLIs, where each subcommand declares its own flag set
+ * rather than sharing one fixed surface — the companion `runSubcommandCli` needs but `parseArgs`
+ * can't provide (it bakes in the flat-CLI surface: `--rule`, `--format`, ...). Long flags
+ * (`--foo`) are looked up in `valueFlags`/`booleanFlags`; short flags (`-f`, single character
+ * only — no bundling, no `-fvalue`) are resolved through `shortFlags` to their long name.
+ * Unknown or malformed flags throw `CliUsageError`. Everything else is positional.
+ */
+export function parseFlags(
+  argv: string[],
+  valueFlags: string[],
+  booleanFlags: string[],
+  shortFlags: Record<string, string> = {}
+): ParsedFlags {
+  const positional: string[] = []
+  const flags: Record<string, string> = {}
+  const booleans = new Set<string>()
+
+  for (let i = 0; i < argv.length; i++) {
+    const arg = argv[i]
+    if (arg.startsWith('--')) {
+      const name = arg.slice(2)
+      if (booleanFlags.includes(name)) {
+        booleans.add(name)
+      } else if (valueFlags.includes(name)) {
+        const value = argv[++i]
+        if (value === undefined) throw new CliUsageError(`--${name} requires a value`)
+        flags[name] = value
+      } else {
+        throw new CliUsageError(`unknown flag: ${arg}`)
+      }
+    } else if (arg.startsWith('-') && arg.length === 2) {
+      const long = shortFlags[arg[1]]
+      if (!long) throw new CliUsageError(`unknown flag: ${arg}`)
+      if (booleanFlags.includes(long)) {
+        booleans.add(long)
+      } else if (valueFlags.includes(long)) {
+        const value = argv[++i]
+        if (value === undefined) throw new CliUsageError(`-${arg[1]} requires a value`)
+        flags[long] = value
+      }
+    } else {
+      positional.push(arg)
+    }
+  }
+
+  return { positional, flags, booleans }
+}
+
+export const LOCALE_RE = /\.([A-Za-z]{2,3}(?:-[A-Za-z]{2,4})?)\.json$/
+
+/** Extracts a trailing `.xx`/`.xx-YY` locale suffix from a filename, e.g. `resume.en.json` → `en`. */
+export function extractLocale(filePath: string): string | undefined {
+  return LOCALE_RE.exec(path.basename(filePath))?.[1]
+}
+
+/**
+ * Reads the `version` field from the `package.json` one directory up from `importMetaUrl` —
+ * i.e. `../package.json` relative to a built `dist/bin.js`, which is the package root. Lets
+ * every CLI's `--version` report its real published version without hand-rolling a JSON read
+ * (and without needing `resolveJsonModule` — this reads the file directly, no JSON import).
+ */
+export function readOwnVersion(importMetaUrl: string): string {
+  const pkgPath = fileURLToPath(new URL('../package.json', importMetaUrl))
+  const pkg = JSON.parse(readFileSync(pkgPath, 'utf8')) as { version?: string }
+  return pkg.version ?? '0.0.0'
 }

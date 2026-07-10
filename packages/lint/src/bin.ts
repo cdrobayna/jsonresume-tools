@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { loadConfig, reportJson, reportText, runCli, type Severity } from '@jsonresume-tools/core'
+import { loadConfig, readOwnVersion, reportJson, reportText, runCli, type Severity } from '@jsonresume-tools/core'
 import { defaults, lint } from './index.js'
 
 const HELP = `Usage: jsonresume-lint [options] <file...>
@@ -13,6 +13,7 @@ Options:
   --format <text|json>       Output format (default: text)
   -c, --config <path>        Explicit config file path
   -h, --help                 Show this help
+  --version                  Show version number
 
 Examples:
   jsonresume-lint resume.en.json
@@ -27,6 +28,7 @@ function isSeverity(value: string): value is Severity {
 
 const exitCode = await runCli(process.argv.slice(2), {
   name: 'jsonresume-lint',
+  version: readOwnVersion(import.meta.url),
   helpText: HELP,
   async run(args) {
     const config = await loadConfig({
