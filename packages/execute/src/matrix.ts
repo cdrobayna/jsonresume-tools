@@ -68,3 +68,18 @@ export async function resolveVariantsDir(
   }
   return defaultDir
 }
+
+/**
+ * Lists the already-built `{role}.{lang}.json` matrix files under `outDir` (relative to `cwd`,
+ * or used as-is if already absolute — `path.resolve` (not `path.join`) is required here so an
+ * absolute `outDir` isn't wrongly nested under `cwd`). Returns `[]` if the directory doesn't
+ * exist yet (e.g. `jrx build` hasn't run).
+ */
+export async function discoverMatrixFiles(cwd: string, outDir: string): Promise<string[]> {
+  try {
+    const names = await readdir(path.resolve(cwd, outDir))
+    return names.filter((n) => n.endsWith('.json')).map((n) => path.join(outDir, n))
+  } catch {
+    return []
+  }
+}

@@ -1,8 +1,7 @@
-import { readdir } from 'node:fs/promises'
 import path from 'node:path'
 import { CliUsageError, type CommandResult, parseFlags } from '@jsonresume-tools/core'
 import { chromiumEnv } from '../env.js'
-import { discoverMasters } from '../matrix.js'
+import { discoverMasters, discoverMatrixFiles } from '../matrix.js'
 import { aggregate, formatReport, type StepResult } from '../report.js'
 import { requireTool } from '../resolve.js'
 import { spawnGate } from '../spawn.js'
@@ -13,15 +12,6 @@ import { runCheck } from './check.js'
 export interface RunAllDeps {
   spawn?: SpawnFn
   cwd?: string
-}
-
-async function discoverMatrixFiles(cwd: string, outDir: string): Promise<string[]> {
-  try {
-    const names = await readdir(path.join(cwd, outDir))
-    return names.filter((n) => n.endsWith('.json')).map((n) => path.join(outDir, n))
-  } catch {
-    return []
-  }
 }
 
 /**
@@ -83,20 +73,25 @@ export async function runAll(argv: string[], deps: RunAllDeps = {}): Promise<Com
 
     const masters = await discoverMasters(cwd)
     const matrixFiles = await discoverMatrixFiles(cwd, outDir)
-    const targets = [...masters.map((m) => m.path), ...matrixFiles]
+    // Masters slug by locale alone (cv.en.pdf) — their basename is always the fixed "resume"
+    // literal, so including it would be redundant. Matrix files slug by their full basename
+    // (cv.backend.en.pdf) since role + locale are both needed to stay unambiguous.
+    const exportTargets = [
+      ...masters.map((m) => ({ path: m.path, slug: m.lang ?? path.basename(m.path, '.json') })),
+      ...matrixFiles.map((f) => ({ path: f, slug: path.basename(f, '.json') }))
+    ]
 
-    for (const file of targets) {
+    for (const target of exportTargets) {
       if (dryRun) {
-        steps.push({ label: `export (${file})`, tool: 'resume', code: 0, skipped: true, stdout: `(dry run) would export ${file}` })
+        steps.push({ label: `export (${target.path})`, tool: 'resume', code: 0, skipped: true, stdout: `(dry run) would export ${target.path}` })
         continue
       }
-      const slug = path.basename(file).replace(/\.json$/, '')
-      const outPath = path.join(outDir, `cv.${slug}.${exportFormat}`)
-      const result = await spawn(resumeTool.execPath, ['export', outPath, '--theme', flags.theme, '--resume', file], {
+      const outPath = path.join(outDir, `cv.${target.slug}.${exportFormat}`)
+      const result = await spawn(resumeTool.execPath, ['export', outPath, '--theme', flags.theme, '--resume', target.path], {
         cwd,
         env: { ...process.env, ...env }
       })
-      steps.push({ label: `export (${file})`, tool: 'resume', code: result.code, stdout: result.stdout, stderr: result.stderr })
+      steps.push({ label: `export (${target.path})`, tool: 'resume', code: result.code, stdout: result.stdout, stderr: result.stderr })
     }
   }
 

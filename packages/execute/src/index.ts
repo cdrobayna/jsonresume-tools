@@ -1,6 +1,6 @@
 export { chromiumEnv, detectChromium } from './env.js'
 export type { ChromiumEnv } from './env.js'
-export { discoverMasters, resolveVariantsDir } from './matrix.js'
+export { discoverMasters, discoverMatrixFiles, resolveVariantsDir } from './matrix.js'
 export type { MasterFile } from './matrix.js'
 export { detectPackageManager, installCommand } from './pm.js'
 export type { InstallCommandOptions, PackageManager } from './pm.js'
