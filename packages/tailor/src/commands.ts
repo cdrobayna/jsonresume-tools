@@ -1,6 +1,6 @@
 import { mkdir, readdir, readFile, writeFile } from 'node:fs/promises'
 import path from 'node:path'
-import { CliUsageError, reportText } from '@jsonresume-tools/core'
+import { CliUsageError, type CommandResult, extractLocale, parseFlags, reportText } from '@jsonresume-tools/core'
 import { checkTailor } from './check.js'
 import { entryLabel, inspect } from './inspect.js'
 import { FILTERABLE_SECTIONS, TAGGABLE_FIELDS, tailor } from './tailor.js'
@@ -8,61 +8,8 @@ import type { JsonResume, ResumeEntry, Variant } from './types/resume.js'
 import type { TailorSummary } from './tailor.js'
 import { loadVariant, loadVariants, ValidationError } from './variant.js'
 
-export interface CommandResult {
-  code: number
-  stdout?: string
-  stderr?: string
-}
-
 function isEnoent(err: unknown): err is NodeJS.ErrnoException {
   return err instanceof Error && (err as NodeJS.ErrnoException).code === 'ENOENT'
-}
-
-interface ParsedFlags {
-  positional: string[]
-  flags: Record<string, string>
-  booleans: Set<string>
-}
-
-function parseFlags(
-  argv: string[],
-  valueFlags: string[],
-  booleanFlags: string[],
-  shortFlags: Record<string, string> = {}
-): ParsedFlags {
-  const positional: string[] = []
-  const flags: Record<string, string> = {}
-  const booleans = new Set<string>()
-
-  for (let i = 0; i < argv.length; i++) {
-    const arg = argv[i]
-    if (arg.startsWith('--')) {
-      const name = arg.slice(2)
-      if (booleanFlags.includes(name)) {
-        booleans.add(name)
-      } else if (valueFlags.includes(name)) {
-        const value = argv[++i]
-        if (value === undefined) throw new CliUsageError(`--${name} requires a value`)
-        flags[name] = value
-      } else {
-        throw new CliUsageError(`unknown flag: ${arg}`)
-      }
-    } else if (arg.startsWith('-') && arg.length === 2) {
-      const long = shortFlags[arg[1]]
-      if (!long) throw new CliUsageError(`unknown flag: ${arg}`)
-      if (booleanFlags.includes(long)) {
-        booleans.add(long)
-      } else if (valueFlags.includes(long)) {
-        const value = argv[++i]
-        if (value === undefined) throw new CliUsageError(`-${arg[1]} requires a value`)
-        flags[long] = value
-      }
-    } else {
-      positional.push(arg)
-    }
-  }
-
-  return { positional, flags, booleans }
 }
 
 async function readResume(resumePath: string): Promise<JsonResume | { code: 1; stderr: string }> {
@@ -112,12 +59,6 @@ function formatSummary(
     }
   }
   return lines
-}
-
-const LOCALE_RE = /\.([A-Za-z]{2,3}(?:-[A-Za-z]{2,4})?)\.json$/
-
-function extractLocale(filePath: string): string | undefined {
-  return LOCALE_RE.exec(path.basename(filePath))?.[1]
 }
 
 function outFilename(variantSlug: string, locale: string | undefined): string {
