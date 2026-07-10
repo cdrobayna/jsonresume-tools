@@ -7,9 +7,9 @@ below is self-contained and independently installable — use the one you need, 
 
 | Package | What it does |
 |---|---|
-| [`jsonresume-parity`](./packages/parity) | Checks structural and content parity across locale variants of a resume (e.g. `resume.en.json` vs `resume.es.json`). |
-| [`jsonresume-lint`](./packages/lint) | Per-file quality checks: date format and ordering, chronology, URLs, email, placeholders, and optional schema validation. |
-| [`jsonresume-tailor`](./packages/tailor) | Generates role-tailored variants (backend, devops, sysadmin, ...) of a resume from a single annotated master JSON Resume. |
+| [`jsonresume-parity`](./packages/parity) | `jrp` — checks structural and content parity across locale variants of a resume (e.g. `resume.en.json` vs `resume.es.json`). |
+| [`jsonresume-lint`](./packages/lint) | `jrl` — per-file quality checks: date format and ordering, chronology, URLs, email, placeholders, and optional schema validation. |
+| [`jsonresume-tailor`](./packages/tailor) | `jrt` — generates role-tailored variants (backend, devops, sysadmin, ...) of a resume from a single annotated master JSON Resume. |
 | [`jsonresume-execute`](./packages/execute) | `jrx` — orchestrates the tools above (plus `resume-cli`) across languages and role variants for multi-tool workflows, e.g. building a full `{role}.{lang}.json` matrix in one command. |
 
 See each package's own README for its full rule set, CLI usage, and programmatic API.
@@ -57,7 +57,7 @@ packages/
   parity/   jsonresume-parity        (published)
   lint/     jsonresume-lint          (published)
   tailor/   jsonresume-tailor        (published)
-  execute/  jsonresume-execute       (published) — orchestrates the three above + resume-cli
+  execute/  jsonresume-execute       (pending first release) — orchestrates the three above + resume-cli
 fixtures/   shared good/bad JSON Resume fixtures used by tests in packages/*
 ```
 

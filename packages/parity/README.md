@@ -16,24 +16,26 @@ npm install --save-dev jsonresume-parity
 
 ## CLI
 
+The bin is installed as both `jsonresume-parity` and the shorter alias `jrp`.
+
 Files use the convention `<anything>.<locale>.json` — the **first file given is the baseline**;
 every other file is compared against it.
 
 ```bash
 # Filename convention
-jsonresume-parity resume.en.json resume.es.json resume.fr.json
+jrp resume.en.json resume.es.json resume.fr.json
 
 # Explicit override when the filename doesn't encode the locale
-jsonresume-parity en=cv-main.json es=cv-espanol.json
+jrp en=cv-main.json es=cv-espanol.json
 
 # Config file (auto-discovered via cosmiconfig; -c overrides explicitly)
-jsonresume-parity -c parity.config.js resume.en.json resume.es.json
+jrp -c parity.config.js resume.en.json resume.es.json
 
 # One-off rule severity override
-jsonresume-parity --rule lengthRatio=off resume.en.json resume.es.json
+jrp --rule lengthRatio=off resume.en.json resume.es.json
 
 # Machine-readable output
-jsonresume-parity --format json resume.en.json resume.es.json
+jrp --format json resume.en.json resume.es.json
 ```
 
 Exit codes: `0` clean, `1` errors present, `2` misuse. Warnings alone never fail the run.

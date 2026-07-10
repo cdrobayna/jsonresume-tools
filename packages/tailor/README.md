@@ -178,22 +178,35 @@ into role-specific variants (see `also`).
 
 ## CLI
 
+The bin is installed as both `jsonresume-tailor` and the shorter alias `jrt`.
+
 ```bash
 # Filter the master resume through the "backend" variant and write the result
-jsonresume-tailor build backend --resume resume.en.json --out resume.backend.en.json
+jrt build backend --resume resume.en.json --out resume.backend.en.json
 
 # Preview without writing (prints the same summary to stdout)
-jsonresume-tailor build backend --resume resume.en.json --out resume.backend.en.json --dry-run
+jrt build backend --resume resume.en.json --out resume.backend.en.json --dry-run
 
 # Silence "overriding basics.X" warnings
-jsonresume-tailor build backend --resume resume.en.json --out resume.backend.en.json --quiet
+jrt build backend --resume resume.en.json --out resume.backend.en.json --quiet
+
+# Show which entries survived per section (with their taggable field counts)
+jrt build backend --resume resume.en.json --out resume.backend.en.json --verbose
+
+# Batch build: every variant in a directory, through one master, in one command
+jrt build --resume resume.en.json --variants-dir variants/ --out-dir dist/
+
+# Inspect indexed taggable fields and tag maps — handy for writing highlightTags/keywordTags/courseTags
+jrt inspect --resume resume.en.json
+jrt inspect --resume resume.en.json --section work
+jrt inspect --resume resume.en.json --format json
 
 # List the variants found in variants/*.json
-jsonresume-tailor list
+jrt list
 
 # Check meta.tailor annotations for coherence against the variants
-jsonresume-tailor check --resume resume.en.json
-jsonresume-tailor check backend --resume resume.en.json   # a single variant
+jrt check --resume resume.en.json
+jrt check backend --resume resume.en.json   # a single variant
 ```
 
 `build` prints a per-section summary on success:
@@ -205,8 +218,17 @@ jsonresume-tailor check backend --resume resume.en.json   # a single variant
 [tailor] education: 2 → 1 entries (courses: 8 → 4)
 ```
 
-Exit codes: `0` success · `1` validation error (invalid variant/resume, out-of-range highlight
-index in `check`) · `2` usage error (bad arguments, file not found).
+With `--verbose`, each surviving entry is listed underneath its section along with how many of
+each taggable field (`highlights`/`keywords`/`courses`) it kept.
+
+Batch build (`--variants-dir`, no positional `<variant>`) runs every `*.json` variant in that
+directory through the same master resume in one command, writing `<variant>.json` into
+`--out-dir` — or `<variant>.<locale>.json` when the master's own filename encodes a locale (e.g.
+`resume.en.json` → `backend.en.json`), the same convention `jsonresume-parity` uses.
+
+Exit codes: `0` success · `1` validation error (invalid variant/resume, or an out-of-range
+`highlightTags`/`keywordTags`/`courseTags` index in `check`) · `2` usage error (bad arguments,
+file not found).
 
 ## Programmatic API
 

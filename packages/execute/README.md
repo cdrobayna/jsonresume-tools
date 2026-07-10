@@ -49,8 +49,9 @@ jrx doctor
 
 # Print-and-confirm install of the recommended toolchain
 jrx setup
-jrx setup --dry-run   # print the install command without running it
-jrx setup --yes       # skip the confirmation prompt
+jrx setup --dry-run    # print the install command without running it
+jrx setup --yes        # skip the confirmation prompt
+jrx setup --global     # install globally (-g) instead of as a dev dependency
 
 # npx-style passthrough to any resolvable tool
 jrx run tailor -- list
@@ -76,7 +77,7 @@ The building blocks — tool resolution, package-manager detection, master/varia
 Chromium detection, spawn helpers, and report aggregation — are exported for reuse:
 
 ```ts
-import { resolveTool, requireTool, discoverMasters, aggregate, formatReport } from 'jsonresume-execute'
+import { resolveTool, requireTool, discoverMasters, discoverMatrixFiles, aggregate, formatReport } from 'jsonresume-execute'
 
 const tailor = requireTool('tailor') // throws with an install hint if not found
 const masters = await discoverMasters(process.cwd())
