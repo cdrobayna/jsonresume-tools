@@ -1,8 +1,6 @@
-import { readdir } from 'node:fs/promises'
-import path from 'node:path'
 import { CliUsageError, type CommandResult, extractLocale, parseFlags } from '@jsonresume-tools/core'
 import { chromiumEnv } from '../env.js'
-import { discoverMasters, resolveVariantsDir, type MasterFile } from '../matrix.js'
+import { discoverMasters, discoverMatrixFiles, resolveVariantsDir, type MasterFile } from '../matrix.js'
 import { aggregate, formatReport, type StepResult } from '../report.js'
 import { requireTool } from '../resolve.js'
 import { spawnGate } from '../spawn.js'
@@ -20,15 +18,6 @@ async function resolveMasters(flags: Record<string, string>, cwd: string): Promi
     : await discoverMasters(cwd)
   if (langFilter) masters = masters.filter((m) => m.lang && langFilter.has(m.lang))
   return masters
-}
-
-async function discoverMatrixFiles(cwd: string, outDir: string): Promise<string[]> {
-  try {
-    const names = await readdir(path.join(cwd, outDir))
-    return names.filter((n) => n.endsWith('.json')).map((n) => path.join(outDir, n))
-  } catch {
-    return []
-  }
 }
 
 /**

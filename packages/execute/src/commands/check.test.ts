@@ -103,6 +103,22 @@ describe('runCheck', () => {
     expect(result.stdout).toContain('[PASS] lint (matrix)')
   })
 
+  it('lints the built matrix when --out-dir is an absolute path outside cwd (regression)', async () => {
+    const cwd = await fixtureRepo()
+    await makeBin(cwd, 'jsonresume-parity')
+    const absOutDir = await mkdtemp(path.join(tmpdir(), 'jrx-check-test-outdir-'))
+    dirs.push(absOutDir)
+    await writeFile(path.join(absOutDir, 'backend.en.json'), '{}')
+    const { spawn, calls } = makeSpawnStub()
+    const result = await runCheck(['--out-dir', absOutDir], { spawn, cwd })
+
+    const lintCalls = calls.filter((c) => c.execPath.includes('jsonresume-lint'))
+    expect(lintCalls).toHaveLength(2)
+    expect(lintCalls[1].args).toContain(path.join(absOutDir, 'backend.en.json'))
+    expect(result.stdout).toContain('[PASS] lint (matrix)')
+    expect(result.stdout).not.toContain('no built matrix found')
+  })
+
   it('aggregates the worst exit code across steps', async () => {
     const cwd = await fixtureRepo()
     await makeBin(cwd, 'jsonresume-parity')

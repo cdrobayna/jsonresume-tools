@@ -87,6 +87,36 @@ describe('runAll', () => {
     await expect(runAll(['--theme', 'my-theme'], { spawn, cwd })).rejects.toThrow(CliUsageError)
   })
 
+  it('exports masters as cv.<lang>.pdf (not cv.resume.<lang>.pdf) and matrix files as cv.<role>.<lang>.pdf', async () => {
+    const cwd = await mkdtemp(path.join(tmpdir(), 'jrx-all-test-'))
+    dirs.push(cwd)
+    await makeBin(cwd, 'jsonresume-lint')
+    await makeBin(cwd, 'jsonresume-tailor')
+    await makeBin(cwd, 'jsonresume-parity')
+    await makeBin(cwd, 'resume')
+    await makeBin(cwd, 'chromium')
+    await writeFile(path.join(cwd, 'resume.en.json'), '{}')
+    await writeFile(path.join(cwd, 'resume.es.json'), '{}')
+    await mkdir(path.join(cwd, 'dist'), { recursive: true })
+    await writeFile(path.join(cwd, 'dist', 'backend.en.json'), '{}')
+
+    const originalPath = process.env.PATH
+    process.env.PATH = `${path.join(cwd, 'node_modules', '.bin')}${path.delimiter}${originalPath ?? ''}`
+    try {
+      const { spawn, calls } = makeSpawnStub()
+      await runAll(['--theme', 'my-theme'], { spawn, cwd })
+
+      const exportPaths = calls.filter((c) => c.args[0] === 'export').map((c) => c.args[1])
+      expect(exportPaths).toContain(path.join('dist', 'cv.en.pdf'))
+      expect(exportPaths).toContain(path.join('dist', 'cv.es.pdf'))
+      expect(exportPaths).toContain(path.join('dist', 'cv.backend.en.pdf'))
+      expect(exportPaths).not.toContain(path.join('dist', 'cv.resume.en.pdf'))
+      expect(exportPaths).not.toContain(path.join('dist', 'cv.resume.es.pdf'))
+    } finally {
+      process.env.PATH = originalPath
+    }
+  })
+
   it('--dry-run skips the actual export rendering once resume-cli and Chromium are available', async () => {
     const cwd = await fixtureRepo()
     await makeBin(cwd, 'resume')

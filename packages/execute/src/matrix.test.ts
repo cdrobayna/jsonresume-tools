@@ -2,7 +2,7 @@ import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import path from 'node:path'
 import { afterEach, describe, expect, it } from 'vitest'
-import { discoverMasters, resolveVariantsDir } from './matrix.js'
+import { discoverMasters, discoverMatrixFiles, resolveVariantsDir } from './matrix.js'
 
 describe('discoverMasters', () => {
   const dirs: string[] = []
@@ -99,5 +99,39 @@ describe('resolveVariantsDir', () => {
     const dir = await tempDir()
     expect(await resolveVariantsDir('en', ['bare-dir', 'en=custom-en'], dir)).toBe('custom-en')
     expect(await resolveVariantsDir('es', ['bare-dir', 'en=custom-en'], dir)).toBe('bare-dir')
+  })
+})
+
+describe('discoverMatrixFiles', () => {
+  const dirs: string[] = []
+
+  afterEach(async () => {
+    await Promise.all(dirs.splice(0).map((dir) => rm(dir, { recursive: true, force: true })))
+  })
+
+  async function tempDir(): Promise<string> {
+    const dir = await mkdtemp(path.join(tmpdir(), 'jrx-matrix-test-'))
+    dirs.push(dir)
+    return dir
+  }
+
+  it('finds .json files under a relative outDir', async () => {
+    const cwd = await tempDir()
+    await mkdir(path.join(cwd, 'dist'), { recursive: true })
+    await writeFile(path.join(cwd, 'dist', 'backend.en.json'), '{}')
+    await writeFile(path.join(cwd, 'dist', 'notes.txt'), 'ignore me')
+    expect(await discoverMatrixFiles(cwd, 'dist')).toEqual([path.join('dist', 'backend.en.json')])
+  })
+
+  it('finds .json files under an absolute outDir outside cwd (regression: path.join(cwd, absDir) must not be used)', async () => {
+    const cwd = await tempDir()
+    const absOutDir = await tempDir()
+    await writeFile(path.join(absOutDir, 'backend.en.json'), '{}')
+    expect(await discoverMatrixFiles(cwd, absOutDir)).toEqual([path.join(absOutDir, 'backend.en.json')])
+  })
+
+  it('returns an empty list when outDir does not exist', async () => {
+    const cwd = await tempDir()
+    expect(await discoverMatrixFiles(cwd, 'dist')).toEqual([])
   })
 })
