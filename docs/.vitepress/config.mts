@@ -3,7 +3,7 @@ import { defineConfig } from 'vitepress'
 export default defineConfig({
   title: 'jsonresume-tools',
   description:
-    'A suite of independent tools for JSON Resume: multi-locale parity checks, per-file quality linting, role-tailored variants, and jrx, a unified CLI to orchestrate them all.',
+    'A suite of independent tools for JSON Resume: multi-locale parity checks, role-tailored variants, and jrx — a unified CLI orchestrating both (and resume-cli) across languages and roles.',
   // Pages URL is https://cdrobayna.github.io/jsonresume-tools/
   base: '/jsonresume-tools/',
   cleanUrls: true,
@@ -18,7 +18,7 @@ export default defineConfig({
 
     nav: [
       { text: 'Guide', link: '/guide/getting-started' },
-      { text: 'Reference', link: '/reference/lint' },
+      { text: 'Reference', link: '/reference/parity' },
       { text: 'FAQ', link: '/faq' }
     ],
 
@@ -34,10 +34,10 @@ export default defineConfig({
       {
         text: 'Reference',
         items: [
-          { text: 'jsonresume-lint (jrl)', link: '/reference/lint' },
           { text: 'jsonresume-parity (jrp)', link: '/reference/parity' },
           { text: 'jsonresume-tailor (jrt)', link: '/reference/tailor' },
           { text: 'jsonresume-execute (jrx)', link: '/reference/execute' },
+          { text: 'jsonresume-lint (jrl)', link: '/reference/lint' },
           { text: 'Config discovery', link: '/reference/config' }
         ]
       },

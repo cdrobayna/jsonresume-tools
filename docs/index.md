@@ -4,37 +4,52 @@ layout: home
 hero:
   name: jsonresume-tools
   text: Independent tools for JSON Resume
-  tagline: Multi-locale parity checks, per-file quality linting, role-tailored variants, and jrx — a CLI to orchestrate them all.
+  tagline: Keep a resume in parity across languages, tailor it per role from one master, and orchestrate both — including resume-cli itself — with one CLI.
   actions:
     - theme: brand
+      text: See the full workflow
+      link: /guide/full-workflow
+    - theme: alt
       text: Try it in 30 seconds
       link: '#try-it-in-30-seconds'
-    - theme: alt
-      text: Getting started
-      link: /guide/getting-started
     - theme: alt
       text: View on GitHub
       link: https://github.com/cdrobayna/jsonresume-tools
 
 features:
-  - title: jsonresume-lint — jrl
-    details: Per-file quality checks — date format and ordering, chronology, URLs, email, leftover placeholders, optional schema validation.
-    link: /reference/lint
   - title: jsonresume-parity — jrp
-    details: Structural and content parity across locale variants of a resume, e.g. resume.en.json vs resume.es.json.
+    details: The gap nothing else in the JSON Resume ecosystem fills — structural and content parity across locale variants of a resume, so resume.en.json and resume.es.json never silently drift apart.
     link: /reference/parity
   - title: jsonresume-tailor — jrt
-    details: Generate role-tailored variants (backend, platform, ...) from one annotated master resume.
+    details: Generate role-tailored variants (backend, platform, ...) from one annotated master resume — no more hand-maintained resume.backend.json copies.
     link: /reference/tailor
   - title: jsonresume-execute — jrx
-    details: Orchestrates the tools above (plus resume-cli) across languages and role variants in one command.
+    details: The unified CLI — builds the full role x language matrix, validates it, and drives resume-cli itself (detects it, tells you what's missing, exports PDF/HTML) in one command.
     link: /reference/execute
+  - title: jsonresume-lint — jrl
+    details: Per-file quality checks — dates, URLs, chronology, leftover placeholders. Useful on any single JSON Resume.
+    link: /reference/lint
 ---
+
+## What is JSON Resume?
+
+[JSON Resume](https://jsonresume.org) is an open-source, community schema for representing a
+résumé as a single JSON file instead of a proprietary document format. Once a resume is
+JSON Resume-shaped, any compatible tool can read it: official themes render it to HTML/PDF, and
+[`resume-cli`](https://github.com/jsonresume/jsonresume.org) (the official CLI) validates, exports,
+and serves it out of the box.
+
+The four tools on this site plug in on top, for the workflows the official tooling doesn't cover:
+keeping a resume in sync across languages, tailoring it per role from a single master, and
+orchestrating both — plus `resume-cli` itself — as the number of masters and variants grows.
+
+Don't have a JSON Resume yet? See the [schema reference](https://jsonresume.org/schema.json) to
+write one by hand, or jump straight to [getting started](/guide/getting-started).
 
 ## Try it in 30 seconds
 
-No JSON Resume of your own yet? Grab this repo's "everything wrong with it" test fixture and lint
-it — no install, no setup:
+Want to see one of these tools run before installing anything? Grab this repo's "everything
+wrong with it" test fixture and lint it — no install, no setup:
 
 ```bash
 curl -sO https://raw.githubusercontent.com/cdrobayna/jsonresume-tools/main/fixtures/bad.en.json
