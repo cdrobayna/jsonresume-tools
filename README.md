@@ -1,16 +1,35 @@
 # jsonresume-tools
 
+[![CI](https://github.com/cdrobayna/jsonresume-tools/actions/workflows/ci.yml/badge.svg)](https://github.com/cdrobayna/jsonresume-tools/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
+[![Node](https://img.shields.io/badge/node-%3E%3D22-brightgreen.svg)](https://nodejs.org)
+
 A suite of independent tools for [JSON Resume](https://jsonresume.org) files. Each package
 below is self-contained and independently installable — use the one you need, ignore the rest.
 
+## Try it in 30 seconds
+
+No JSON Resume of your own yet? Grab this repo's "everything wrong with it" test fixture and
+lint it — no install, no setup:
+
+```bash
+curl -sO https://raw.githubusercontent.com/cdrobayna/jsonresume-tools/main/fixtures/bad.en.json
+npx jsonresume-lint bad.en.json
+```
+
+You'll see real findings: an invalid email/URL shape, a swapped date range, and a leftover
+`TODO`. Once you have your own `resume.json` (see [jsonresume.org](https://jsonresume.org) for
+the schema), swap the filename — or `npm install --save-dev jsonresume-lint` in your own project
+instead of using `npx` each time.
+
 ## Tools
 
-| Package | What it does |
-|---|---|
-| [`jsonresume-parity`](./packages/parity) | `jrp` — checks structural and content parity across locale variants of a resume (e.g. `resume.en.json` vs `resume.es.json`). |
-| [`jsonresume-lint`](./packages/lint) | `jrl` — per-file quality checks: date format and ordering, chronology, URLs, email, placeholders, and optional schema validation. |
-| [`jsonresume-tailor`](./packages/tailor) | `jrt` — generates role-tailored variants (backend, devops, sysadmin, ...) of a resume from a single annotated master JSON Resume. |
-| [`jsonresume-execute`](./packages/execute) | `jrx` — orchestrates the tools above (plus `resume-cli`) across languages and role variants for multi-tool workflows, e.g. building a full `{role}.{lang}.json` matrix in one command. |
+| Package | What it does | Version |
+|---|---|---|
+| [`jsonresume-parity`](./packages/parity) | `jrp` — checks structural and content parity across locale variants of a resume (e.g. `resume.en.json` vs `resume.es.json`). | [![npm](https://img.shields.io/npm/v/jsonresume-parity.svg)](https://www.npmjs.com/package/jsonresume-parity) |
+| [`jsonresume-lint`](./packages/lint) | `jrl` — per-file quality checks: date format and ordering, chronology, URLs, email, placeholders, and optional schema validation. | [![npm](https://img.shields.io/npm/v/jsonresume-lint.svg)](https://www.npmjs.com/package/jsonresume-lint) |
+| [`jsonresume-tailor`](./packages/tailor) | `jrt` — generates role-tailored variants (backend, devops, sysadmin, ...) of a resume from a single annotated master JSON Resume. | [![npm](https://img.shields.io/npm/v/jsonresume-tailor.svg)](https://www.npmjs.com/package/jsonresume-tailor) |
+| [`jsonresume-execute`](./packages/execute) | `jrx` — orchestrates the tools above (plus `resume-cli`) across languages and role variants for multi-tool workflows, e.g. building a full `{role}.{lang}.json` matrix in one command. | _unreleased_ |
 
 See each package's own README for its full rule set, CLI usage, and programmatic API.
 

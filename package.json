@@ -15,13 +15,18 @@
     "changeset": "changeset",
     "version-packages": "changeset version",
     "release": "changeset publish",
-    "clean": "pnpm -r exec rm -rf dist *.tsbuildinfo"
+    "clean": "pnpm -r exec rm -rf dist *.tsbuildinfo",
+    "docs:prepare": "node docs/.vitepress/scripts/build-reference.mjs",
+    "docs:dev": "pnpm docs:prepare && vitepress dev docs",
+    "docs:build": "pnpm docs:prepare && vitepress build docs",
+    "docs:preview": "vitepress preview docs"
   },
   "devDependencies": {
     "@changesets/cli": "^2.27.10",
     "@types/node": "^22.10.5",
     "tsup": "^8.5.1",
     "typescript": "^5.7.3",
+    "vitepress": "^1.6.4",
     "vitest": "^3.0.5"
   }
 }

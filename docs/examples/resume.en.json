@@ -1,0 +1,136 @@
+{
+  "basics": {
+    "name": "Camila Duarte",
+    "label": "Software Engineer",
+    "email": "camila.duarte@example.com",
+    "phone": "+1-555-017-2043",
+    "url": "https://camiladuarte.dev",
+    "summary": "Backend-leaning software engineer who has spent equal time shipping services and running the infrastructure underneath them.",
+    "location": { "countryCode": "US" },
+    "profiles": [
+      { "network": "GitHub", "username": "camiladuarte", "url": "https://github.com/camiladuarte" }
+    ]
+  },
+  "work": [
+    {
+      "name": "NimbusPay",
+      "position": "Senior Backend Engineer",
+      "startDate": "2023-03",
+      "highlights": [
+        "Lead the redesign of the subscription billing API, now handling 4M+ requests a month.",
+        "Cut p95 API latency by 35% by introducing read replicas and query-level caching."
+      ],
+      "meta": { "tailor": { "tags": ["backend"] } }
+    },
+    {
+      "name": "Vantage Cloud",
+      "position": "Platform Engineer",
+      "startDate": "2021-06",
+      "endDate": "2023-02",
+      "highlights": [
+        "Migrated the deploy pipeline to GitHub Actions, cutting release time from 40 to 9 minutes.",
+        "Rolled out a shared Terraform module library adopted by 12 product teams."
+      ],
+      "meta": { "tailor": { "tags": ["platform"] } }
+    },
+    {
+      "name": "Solstice Retail",
+      "position": "Backend & Platform Engineer",
+      "startDate": "2019-09",
+      "endDate": "2021-05",
+      "highlights": [
+        "Built the checkout service that absorbed the company's Black Friday peak traffic.",
+        "Introduced blue-green deploys, eliminating checkout downtime during releases.",
+        "Wrote the on-call runbooks the infrastructure team still uses today."
+      ],
+      "meta": {
+        "tailor": {
+          "tags": ["backend", "platform"],
+          "highlightTags": {
+            "*": [1],
+            "backend": [0, 1],
+            "platform": [1, 2]
+          }
+        }
+      }
+    },
+    {
+      "name": "Aurora Systems",
+      "position": "Software Engineer",
+      "startDate": "2017-08",
+      "endDate": "2019-08",
+      "highlights": [
+        "Rotated across backend, infrastructure, and support work on a small generalist team.",
+        "Wrote the team's first automated test suite, raising coverage from 12% to 70%."
+      ],
+      "meta": { "tailor": { "tags": ["core"] } }
+    }
+  ],
+  "skills": [
+    {
+      "name": "Backend & Data",
+      "keywords": ["Node.js", "TypeScript", "NestJS", "PostgreSQL"],
+      "meta": { "tailor": { "tags": ["backend"] } }
+    },
+    {
+      "name": "Cloud & Platform",
+      "keywords": ["Kubernetes", "Terraform", "AWS"],
+      "meta": { "tailor": { "tags": ["platform"] } }
+    },
+    {
+      "name": "Languages & Tooling",
+      "keywords": ["Node.js", "TypeScript", "Python", "Bash"],
+      "meta": {
+        "tailor": {
+          "tags": ["backend", "platform"],
+          "keywordTags": { "backend": [0, 1], "platform": [2, 3] }
+        }
+      }
+    },
+    {
+      "name": "Fundamentals",
+      "keywords": ["Git", "Linux", "CI/CD"],
+      "meta": { "tailor": { "tags": ["core"] } }
+    }
+  ],
+  "projects": [
+    {
+      "name": "Payments Reconciliation Service",
+      "description": "Nightly reconciliation between the payments ledger and the bank settlement feed.",
+      "highlights": [
+        "Replaced a manual spreadsheet reconciliation with an automated nightly job.",
+        "Reduced unresolved discrepancies from roughly 40 a month to under 3."
+      ],
+      "meta": { "tailor": { "tags": ["backend"] } }
+    },
+    {
+      "name": "Cluster Autoscaler Rollout",
+      "description": "Workload-aware autoscaling for the shared Kubernetes platform.",
+      "highlights": [
+        "Rolled out cluster autoscaling across 6 production clusters.",
+        "Cut idle compute spend by 30% without regressing p95 scheduling latency."
+      ],
+      "meta": { "tailor": { "tags": ["platform"] } }
+    }
+  ],
+  "education": [
+    {
+      "institution": "University of Texas at Austin",
+      "area": "Computer Science",
+      "studyType": "B.Sc.",
+      "startDate": "2012-08",
+      "endDate": "2016-05",
+      "meta": { "tailor": { "tags": ["core"] } }
+    }
+  ],
+  "awards": [
+    {
+      "title": "Engineering Impact Award",
+      "date": "2024-06",
+      "awarder": "NimbusPay",
+      "summary": "Recognized for leading the subscription billing API redesign.",
+      "meta": { "tailor": { "tags": ["core"] } }
+    }
+  ],
+  "meta": { "language": "en" }
+}

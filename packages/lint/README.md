@@ -1,5 +1,8 @@
 # jsonresume-lint
 
+[![npm version](https://img.shields.io/npm/v/jsonresume-lint.svg)](https://www.npmjs.com/package/jsonresume-lint)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](../../LICENSE)
+
 Per-file quality checks for a single [JSON Resume](https://jsonresume.org): date format and
 ordering, reverse-chronological `work`/`education` sections, valid URLs and email, leftover
 placeholder text, and optional schema validation.
