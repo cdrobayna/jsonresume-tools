@@ -13,7 +13,14 @@ happen. For environment setup (Node/pnpm versions, build/test commands), see the
 - Open a PR into `main` rather than pushing directly, even for small changes. `main` is what
   triggers the release workflow (see below), so keeping it gated behind CI + review avoids a
   broken package landing there.
-- Squash-merge PRs. Delete the branch after merging.
+- Merge PRs with a merge commit (GitHub's "Create a merge commit", not squash or rebase).
+  This keeps each branch's real commits as actual ancestors of `main`, so a stacked branch
+  (one PR built on top of another, unmerged one) can sync against the new `main` with a plain
+  `git rebase main` once its base lands — no conflicts, no `rebase --onto`/force-push
+  surgery. Squash and rebase-merge both mint new commit hashes for the same content, which
+  breaks that ancestry and makes any branch stacked underneath show phantom conflicts against
+  `main` (same change, unrelated history) even though nothing actually conflicts.
+- Delete the branch after merging.
 - Never push directly to the `changeset-release/main` branch — it's owned by the release
   Action and gets regenerated on every push to `main`.
 
