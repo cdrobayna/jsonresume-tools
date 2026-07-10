@@ -24,7 +24,8 @@
     }
   },
   "bin": {
-    "jsonresume-lint": "./dist/bin.js"
+    "jsonresume-lint": "./dist/bin.js",
+    "jrl": "./dist/bin.js"
   },
   "files": [
     "dist"

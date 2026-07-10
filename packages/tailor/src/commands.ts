@@ -1,9 +1,11 @@
-import { readFile, writeFile } from 'node:fs/promises'
+import { mkdir, readdir, readFile, writeFile } from 'node:fs/promises'
 import path from 'node:path'
 import { CliUsageError, reportText } from '@jsonresume-tools/core'
 import { checkTailor } from './check.js'
-import { tailor } from './tailor.js'
-import type { JsonResume, Variant } from './types/resume.js'
+import { entryLabel, inspect } from './inspect.js'
+import { FILTERABLE_SECTIONS, TAGGABLE_FIELDS, tailor } from './tailor.js'
+import type { JsonResume, ResumeEntry, Variant } from './types/resume.js'
+import type { TailorSummary } from './tailor.js'
 import { loadVariant, loadVariants, ValidationError } from './variant.js'
 
 export interface CommandResult {
@@ -22,14 +24,12 @@ interface ParsedFlags {
   booleans: Set<string>
 }
 
-/**
- * Hand-rolled flag parser shared by the three subcommands below — each has a different set of
- * `--flag <value>` / `--boolean-flag` options, so this stays generic instead of hardcoding any
- * one command's shape. Mirrors the style (and the "unknown flag throws `CliUsageError`"
- * convention) of `@jsonresume-tools/core`'s `parseArgs`, just parameterized per-command since
- * `build`/`list`/`check` don't share a flag surface the way `lint`/`parity` do.
- */
-function parseFlags(argv: string[], valueFlags: string[], booleanFlags: string[]): ParsedFlags {
+function parseFlags(
+  argv: string[],
+  valueFlags: string[],
+  booleanFlags: string[],
+  shortFlags: Record<string, string> = {}
+): ParsedFlags {
   const positional: string[] = []
   const flags: Record<string, string> = {}
   const booleans = new Set<string>()
@@ -46,6 +46,16 @@ function parseFlags(argv: string[], valueFlags: string[], booleanFlags: string[]
         flags[name] = value
       } else {
         throw new CliUsageError(`unknown flag: ${arg}`)
+      }
+    } else if (arg.startsWith('-') && arg.length === 2) {
+      const long = shortFlags[arg[1]]
+      if (!long) throw new CliUsageError(`unknown flag: ${arg}`)
+      if (booleanFlags.includes(long)) {
+        booleans.add(long)
+      } else if (valueFlags.includes(long)) {
+        const value = argv[++i]
+        if (value === undefined) throw new CliUsageError(`-${arg[1]} requires a value`)
+        flags[long] = value
       }
     } else {
       positional.push(arg)
@@ -68,20 +78,84 @@ function isCommandResult(value: unknown): value is CommandResult {
   return typeof value === 'object' && value !== null && 'code' in value
 }
 
-/** `jsonresume-tailor build <variant> --resume <path> --out <path> [--variant-file <path>] [--dry-run] [--quiet]` */
-export async function runBuild(argv: string[]): Promise<CommandResult> {
-  const { positional, flags, booleans } = parseFlags(argv, ['resume', 'out', 'variant-file'], ['dry-run', 'quiet'])
+function formatSummary(
+  variantName: string,
+  summary: TailorSummary,
+  target: string,
+  verbose: boolean,
+  filteredResume: JsonResume
+): string[] {
+  const lines = [`[tailor] ${variantName} → ${target}`]
+  for (const [section, sectionSummary] of Object.entries(summary.sections)) {
+    const stats = Object.entries(sectionSummary.arrayStats ?? {})
+      .map(([field, { before, after }]) => `${field}: ${before} → ${after}`)
+      .join(', ')
+    const extra = stats ? ` (${stats})` : ''
+    lines.push(`[tailor] ${section}: ${sectionSummary.before} → ${sectionSummary.after} entries${extra}`)
 
-  const [variantName] = positional
-  if (!variantName) throw new CliUsageError('build requires a <variant> argument, e.g. "build backend"')
+    if (verbose) {
+      const entries = filteredResume[section]
+      if (Array.isArray(entries)) {
+        for (const entry of entries as ResumeEntry[]) {
+          const label = entryLabel(entry, section)
+          const extras: string[] = []
+          for (const { field } of TAGGABLE_FIELDS) {
+            const values = entry[field]
+            if (Array.isArray(values) && values.length > 0) {
+              extras.push(`${values.length} ${field}`)
+            }
+          }
+          const suffix = extras.length > 0 ? ` (${extras.join(', ')})` : ''
+          lines.push(`[tailor]   - ${label}${suffix}`)
+        }
+      }
+    }
+  }
+  return lines
+}
+
+const LOCALE_RE = /\.([A-Za-z]{2,3}(?:-[A-Za-z]{2,4})?)\.json$/
+
+function extractLocale(filePath: string): string | undefined {
+  return LOCALE_RE.exec(path.basename(filePath))?.[1]
+}
+
+function outFilename(variantSlug: string, locale: string | undefined): string {
+  return locale ? `${variantSlug}.${locale}.json` : `${variantSlug}.json`
+}
+
+export async function runBuild(argv: string[]): Promise<CommandResult> {
+  const { positional, flags, booleans } = parseFlags(
+    argv,
+    ['resume', 'out', 'variant-file', 'variants-dir', 'out-dir'],
+    ['dry-run', 'quiet', 'verbose'],
+    { r: 'resume', o: 'out', O: 'out-dir', d: 'variants-dir', n: 'dry-run', q: 'quiet', v: 'verbose' }
+  )
+
   if (!flags.resume) throw new CliUsageError('build requires --resume <path>')
   const dryRun = booleans.has('dry-run')
-  if (!dryRun && !flags.out) throw new CliUsageError('build requires --out <path> (unless --dry-run)')
   const quiet = booleans.has('quiet')
+  const verbose = booleans.has('verbose')
+  const batchMode = !!flags['variants-dir']
+
+  const [variantName] = positional
+
+  if (batchMode) {
+    if (variantName) throw new CliUsageError('--variants-dir cannot be combined with a positional <variant>')
+    if (flags['variant-file']) throw new CliUsageError('--variants-dir cannot be combined with --variant-file')
+    if (!dryRun && !flags['out-dir']) throw new CliUsageError('batch build requires --out-dir <path> (unless --dry-run)')
+  } else {
+    if (!variantName) throw new CliUsageError('build requires a <variant> argument, e.g. "build backend"')
+    if (!dryRun && !flags.out) throw new CliUsageError('build requires --out <path> (unless --dry-run)')
+  }
 
   const resumeOrError = await readResume(flags.resume)
   if (isCommandResult(resumeOrError)) return resumeOrError
   const resume = resumeOrError
+
+  if (batchMode) {
+    return runBatchBuild(flags['variants-dir'], resume, flags.resume, flags['out-dir'], dryRun, quiet, verbose)
+  }
 
   const variantPath = flags['variant-file'] ?? path.join('variants', `${variantName}.json`)
   let variant: Variant
@@ -89,7 +163,7 @@ export async function runBuild(argv: string[]): Promise<CommandResult> {
     variant = await loadVariant(variantPath)
   } catch (err) {
     if (err instanceof ValidationError) return { code: 1, stderr: err.message }
-    throw err // CliUsageError (missing variant file) bubbles up to exit 2
+    throw err
   }
 
   const warnings: string[] = []
@@ -99,14 +173,8 @@ export async function runBuild(argv: string[]): Promise<CommandResult> {
     onWarning: (message) => warnings.push(message)
   })
 
-  const lines = [`[tailor] ${variant.name} → ${dryRun ? '(dry run)' : flags.out}`]
-  for (const [section, sectionSummary] of Object.entries(summary.sections)) {
-    const stats = Object.entries(sectionSummary.arrayStats ?? {})
-      .map(([field, { before, after }]) => `${field}: ${before} → ${after}`)
-      .join(', ')
-    const extra = stats ? ` (${stats})` : ''
-    lines.push(`[tailor] ${section}: ${sectionSummary.before} → ${sectionSummary.after} entries${extra}`)
-  }
+  const target = dryRun ? '(dry run)' : (flags.out as string)
+  const lines = formatSummary(variant.name, summary, target, verbose, output)
 
   if (!dryRun) {
     await writeFile(flags.out as string, `${JSON.stringify(output, null, 2)}\n`, 'utf8')
@@ -119,9 +187,77 @@ export async function runBuild(argv: string[]): Promise<CommandResult> {
   }
 }
 
+async function runBatchBuild(
+  variantsDir: string,
+  resume: JsonResume,
+  resumePath: string,
+  outDir: string | undefined,
+  dryRun: boolean,
+  quiet: boolean,
+  verbose: boolean
+): Promise<CommandResult> {
+  let filenames: string[]
+  try {
+    filenames = await readdir(variantsDir)
+  } catch (err) {
+    if (isEnoent(err)) throw new CliUsageError(`variants directory not found: ${variantsDir}`)
+    throw err
+  }
+
+  const jsonFiles = filenames.filter((name) => name.endsWith('.json')).sort()
+  if (jsonFiles.length === 0) {
+    return { code: 0, stdout: `no variants found in ${variantsDir}` }
+  }
+
+  if (!dryRun && outDir) {
+    await mkdir(outDir, { recursive: true })
+  }
+
+  const locale = extractLocale(resumePath)
+  const allLines: string[] = []
+  const allWarnings: string[] = []
+
+  for (const filename of jsonFiles) {
+    const variantPath = path.join(variantsDir, filename)
+    let variant: Variant
+    try {
+      variant = await loadVariant(variantPath)
+    } catch (err) {
+      if (err instanceof ValidationError) return { code: 1, stderr: err.message }
+      throw err
+    }
+
+    const warnings: string[] = []
+    const { resume: output, summary } = tailor(resume, variant, {
+      quiet,
+      input: resumePath,
+      onWarning: (msg) => warnings.push(msg)
+    })
+
+    const slug = filename.replace(/\.json$/, '')
+    const outName = outFilename(slug, locale)
+    const outPath = outDir ? path.join(outDir, outName) : undefined
+    const target = dryRun ? '(dry run)' : (outPath ?? outName)
+
+    allLines.push(...formatSummary(variant.name, summary, target, verbose, output))
+
+    if (!dryRun && outPath) {
+      await writeFile(outPath, `${JSON.stringify(output, null, 2)}\n`, 'utf8')
+    }
+
+    allWarnings.push(...warnings)
+  }
+
+  return {
+    code: 0,
+    stdout: allLines.join('\n'),
+    stderr: quiet || allWarnings.length === 0 ? undefined : allWarnings.join('\n')
+  }
+}
+
 /** `jsonresume-tailor list [--variants-dir <path>]` */
 export async function runList(argv: string[]): Promise<CommandResult> {
-  const { flags } = parseFlags(argv, ['variants-dir'], [])
+  const { flags } = parseFlags(argv, ['variants-dir'], [], { d: 'variants-dir' })
   const dir = flags['variants-dir'] ?? 'variants'
 
   let variants
@@ -142,7 +278,7 @@ export async function runList(argv: string[]): Promise<CommandResult> {
 
 /** `jsonresume-tailor check [<variant>] --resume <path> [--variants-dir <path>]` */
 export async function runCheck(argv: string[]): Promise<CommandResult> {
-  const { positional, flags } = parseFlags(argv, ['resume', 'variants-dir'], [])
+  const { positional, flags } = parseFlags(argv, ['resume', 'variants-dir'], [], { r: 'resume', d: 'variants-dir' })
   const [variantName] = positional
   if (!flags.resume) throw new CliUsageError('check requires --resume <path>')
   const dir = flags['variants-dir'] ?? 'variants'
@@ -162,4 +298,58 @@ export async function runCheck(argv: string[]): Promise<CommandResult> {
   const result = checkTailor(resume, variants)
   const hasErrors = result.errors.length > 0
   return { code: hasErrors ? 1 : 0, stdout: reportText(result) }
+}
+
+/** `jsonresume-tailor inspect --resume <path> [--section <name>] [--format text|json]` */
+export async function runInspect(argv: string[]): Promise<CommandResult> {
+  const { flags } = parseFlags(argv, ['resume', 'section', 'format'], [], { r: 'resume', s: 'section', f: 'format' })
+
+  if (!flags.resume) throw new CliUsageError('inspect requires --resume <path>')
+  const format = flags.format ?? 'text'
+  if (format !== 'text' && format !== 'json') {
+    throw new CliUsageError('--format must be "text" or "json"')
+  }
+  const sectionFilter = flags.section
+  if (sectionFilter && !(FILTERABLE_SECTIONS as readonly string[]).includes(sectionFilter)) {
+    throw new CliUsageError(`unknown section: ${sectionFilter}. Valid: ${FILTERABLE_SECTIONS.join(', ')}`)
+  }
+
+  const resumeOrError = await readResume(flags.resume)
+  if (isCommandResult(resumeOrError)) return resumeOrError
+
+  const entries = inspect(resumeOrError, sectionFilter)
+
+  if (format === 'json') {
+    return { code: 0, stdout: JSON.stringify(entries, null, 2) }
+  }
+
+  const lines: string[] = []
+  for (const entry of entries) {
+    lines.push(`${entry.section}[${entry.index}] ${entry.label}`)
+    if (entry.tags.length > 0) {
+      lines.push(`  tags: ${entry.tags.join(', ')}`)
+    }
+    for (const [field, values] of Object.entries(entry.taggableFields)) {
+      lines.push(`  ${field}:`)
+      values.forEach((value, i) => {
+        lines.push(`    [${i}] ${value}`)
+      })
+      const metaKey = TAGGABLE_FIELDS.find((t) => t.field === field)?.metaKey
+      if (metaKey && entry.tagMaps[metaKey]) {
+        lines.push(`  ${metaKey}:`)
+        for (const [tag, indices] of Object.entries(entry.tagMaps[metaKey])) {
+          lines.push(`    ${tag}: [${indices.join(', ')}]`)
+        }
+      }
+    }
+    if (entry.labelPerTag) {
+      lines.push('  labelPerTag:')
+      for (const [tag, label] of Object.entries(entry.labelPerTag)) {
+        lines.push(`    ${tag}: "${label}"`)
+      }
+    }
+    lines.push('')
+  }
+
+  return { code: 0, stdout: lines.join('\n').trimEnd() }
 }

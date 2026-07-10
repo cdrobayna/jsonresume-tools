@@ -24,7 +24,8 @@
     }
   },
   "bin": {
-    "jsonresume-tailor": "./dist/bin.js"
+    "jsonresume-tailor": "./dist/bin.js",
+    "jrt": "./dist/bin.js"
   },
   "files": [
     "dist",

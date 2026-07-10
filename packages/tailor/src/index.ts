@@ -1,5 +1,7 @@
 export { checkTailor, defaults as checkDefaults } from './check.js'
 export type { TailorCheckRuleName } from './check.js'
+export { entryLabel, inspect } from './inspect.js'
+export type { InspectedEntry } from './inspect.js'
 export { stripTailorMeta } from './strip.js'
 export { FILTERABLE_SECTIONS, TAGGABLE_FIELDS, tailor } from './tailor.js'
 export type { TailorOptions, TailorResult, TailorSectionSummary, TailorSummary } from './tailor.js'

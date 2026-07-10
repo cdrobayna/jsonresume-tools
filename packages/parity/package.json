@@ -26,7 +26,8 @@
     }
   },
   "bin": {
-    "jsonresume-parity": "./dist/bin.js"
+    "jsonresume-parity": "./dist/bin.js",
+    "jrp": "./dist/bin.js"
   },
   "files": [
     "dist"
