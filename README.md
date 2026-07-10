@@ -29,7 +29,7 @@ instead of using `npx` each time.
 | [`jsonresume-parity`](./packages/parity) | `jrp` — checks structural and content parity across locale variants of a resume (e.g. `resume.en.json` vs `resume.es.json`). | [![npm](https://img.shields.io/npm/v/jsonresume-parity.svg)](https://www.npmjs.com/package/jsonresume-parity) |
 | [`jsonresume-lint`](./packages/lint) | `jrl` — per-file quality checks: date format and ordering, chronology, URLs, email, placeholders, and optional schema validation. | [![npm](https://img.shields.io/npm/v/jsonresume-lint.svg)](https://www.npmjs.com/package/jsonresume-lint) |
 | [`jsonresume-tailor`](./packages/tailor) | `jrt` — generates role-tailored variants (backend, devops, sysadmin, ...) of a resume from a single annotated master JSON Resume. | [![npm](https://img.shields.io/npm/v/jsonresume-tailor.svg)](https://www.npmjs.com/package/jsonresume-tailor) |
-| [`jsonresume-execute`](./packages/execute) | `jrx` — orchestrates the tools above (plus `resume-cli`) across languages and role variants for multi-tool workflows, e.g. building a full `{role}.{lang}.json` matrix in one command. | _unreleased_ |
+| [`jsonresume-execute`](./packages/execute) | `jrx` — orchestrates the tools above (plus `resume-cli`) across languages and role variants for multi-tool workflows, e.g. building a full `{role}.{lang}.json` matrix in one command. | [![npm](https://img.shields.io/npm/v/jsonresume-execute.svg)](https://www.npmjs.com/package/jsonresume-execute) |
 
 See each package's own README for its full rule set, CLI usage, and programmatic API.
 
@@ -76,14 +76,14 @@ packages/
   parity/   jsonresume-parity        (published)
   lint/     jsonresume-lint          (published)
   tailor/   jsonresume-tailor        (published)
-  execute/  jsonresume-execute       (pending first release) — orchestrates the three above + resume-cli
+  execute/  jsonresume-execute       (published) — orchestrates the three above + resume-cli
 fixtures/   shared good/bad JSON Resume fixtures used by tests in packages/*
 ```
 
 ## Status
 
-`jsonresume-parity`, `jsonresume-lint`, and `jsonresume-tailor` are published on npm.
-`jsonresume-execute` is new and ships in its first release via the changeset in this repo.
+All four packages — `jsonresume-parity`, `jsonresume-lint`, `jsonresume-tailor`, and
+`jsonresume-execute` — are published on npm.
 
 ## License
 

@@ -10,25 +10,22 @@ hero:
       text: See the full workflow
       link: /guide/full-workflow
     - theme: alt
-      text: Try it in 30 seconds
-      link: '#try-it-in-30-seconds'
-    - theme: alt
       text: View on GitHub
       link: https://github.com/cdrobayna/jsonresume-tools
 
 features:
-  - title: jsonresume-parity — jrp
+  - title: Parity
     details: The gap nothing else in the JSON Resume ecosystem fills — structural and content parity across locale variants of a resume, so resume.en.json and resume.es.json never silently drift apart.
     link: /reference/parity
-  - title: jsonresume-tailor — jrt
+  - title: Tailor
     details: Generate role-tailored variants (backend, platform, ...) from one annotated master resume — no more hand-maintained resume.backend.json copies.
     link: /reference/tailor
-  - title: jsonresume-execute — jrx
-    details: The unified CLI — builds the full role x language matrix, validates it, and drives resume-cli itself (detects it, tells you what's missing, exports PDF/HTML) in one command.
-    link: /reference/execute
-  - title: jsonresume-lint — jrl
+  - title: Lint
     details: Per-file quality checks — dates, URLs, chronology, leftover placeholders. Useful on any single JSON Resume.
     link: /reference/lint
+  - title: Execute
+    details: The unified CLI that orchestrates the three tools above — builds the full role x language matrix, validates it, and drives resume-cli itself (detects it, tells you what's missing, exports PDF/HTML) in one command.
+    link: /reference/execute
 ---
 
 ## What is JSON Resume?
@@ -46,23 +43,43 @@ orchestrating both — plus `resume-cli` itself — as the number of masters and
 Don't have a JSON Resume yet? See the [schema reference](https://jsonresume.org/schema.json) to
 write one by hand, or jump straight to [getting started](/guide/getting-started).
 
-## Try it in 30 seconds
+## See it in action
 
-Want to see one of these tools run before installing anything? Grab this repo's "everything
-wrong with it" test fixture and lint it — no install, no setup:
+One entry, annotated once in the master resume:
 
-```bash
-curl -sO https://raw.githubusercontent.com/cdrobayna/jsonresume-tools/main/fixtures/bad.en.json
-npx jsonresume-lint bad.en.json
+```json
+{
+  "name": "Solstice Retail",
+  "position": "Backend & Platform Engineer",
+  "highlights": [
+    "Built the checkout service that absorbed the company's Black Friday peak traffic.",
+    "Introduced blue-green deploys, eliminating checkout downtime during releases.",
+    "Wrote the on-call runbooks the infrastructure team still uses today."
+  ],
+  "meta": {
+    "tailor": {
+      "tags": ["backend", "platform"],
+      "highlightTags": { "backend": [0, 1], "platform": [1, 2] }
+    }
+  }
+}
 ```
 
-You'll see real findings: an invalid email/URL shape, a swapped date range, and a leftover `TODO`.
-Once you have your own `resume.json` (see [jsonresume.org](https://jsonresume.org) for the
-schema), swap the filename — or `npm install --save-dev jsonresume-lint` in your own project
-instead of using `npx` each time.
+One `jrx build --out-dir dist` later, this same entry survives into both role-tailored outputs —
+with a different pair of highlights surfaced in each:
 
-Ready for the full picture — one annotated resume producing role-tailored, bilingual output in
-one command? See the [full workflow tutorial](/guide/full-workflow).
+**`backend.en.json`**
+- Built the checkout service that absorbed the company's Black Friday peak traffic.
+- Introduced blue-green deploys, eliminating checkout downtime during releases.
+
+**`platform.en.json`**
+- Introduced blue-green deploys, eliminating checkout downtime during releases.
+- Wrote the on-call runbooks the infrastructure team still uses today.
+
+Every other section (`work`, `skills`, `education`, ...) gets the same tag-based filtering, and
+`jsonresume-parity` is checking the whole thing stays in sync with the Spanish translation the
+whole time. Nothing above is a mockup — it's real output from `docs/examples/` in this repo. See
+the [full workflow tutorial](/guide/full-workflow) to run it yourself.
 
 ## Origin
 

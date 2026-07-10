@@ -1,5 +1,26 @@
 import { defineConfig } from 'vitepress'
 
+// Reference pages are generated 1:1 from packages/*/README.md (plus the hand-authored config.md)
+// and stay English-only in content — see docs/reference/config.md's scope note. They're also
+// mirrored under docs/es/reference/ (same English content, see build-reference.mjs) purely so
+// VitePress's URL-prefix locale detection keeps the Spanish nav/sidebar/footer chrome instead of
+// flipping to English when a Spanish-site visitor opens a reference page.
+const referenceItemsEn = [
+  { text: 'jsonresume-parity (jrp)', link: '/reference/parity' },
+  { text: 'jsonresume-tailor (jrt)', link: '/reference/tailor' },
+  { text: 'jsonresume-lint (jrl)', link: '/reference/lint' },
+  { text: 'jsonresume-execute (jrx)', link: '/reference/execute' },
+  { text: 'Config discovery', link: '/reference/config' }
+]
+
+const referenceItemsEs = [
+  { text: 'jsonresume-parity (jrp) (EN)', link: '/es/reference/parity' },
+  { text: 'jsonresume-tailor (jrt) (EN)', link: '/es/reference/tailor' },
+  { text: 'jsonresume-lint (jrl) (EN)', link: '/es/reference/lint' },
+  { text: 'jsonresume-execute (jrx) (EN)', link: '/es/reference/execute' },
+  { text: 'Configuración (EN)', link: '/es/reference/config' }
+]
+
 export default defineConfig({
   title: 'jsonresume-tools',
   description:
@@ -11,41 +32,64 @@ export default defineConfig({
 
   head: [['link', { rel: 'icon', href: '/jsonresume-tools/favicon.svg' }]],
 
+  locales: {
+    root: {
+      label: 'English',
+      lang: 'en',
+      themeConfig: {
+        nav: [
+          { text: 'Guide', link: '/guide/getting-started' },
+          { text: 'Reference', link: '/reference/parity' },
+          { text: 'FAQ', link: '/faq' }
+        ],
+        sidebar: [
+          {
+            text: 'Guide',
+            items: [
+              { text: 'Getting started', link: '/guide/getting-started' },
+              { text: 'Which tool do I need?', link: '/guide/which-tool' },
+              { text: 'Full workflow', link: '/guide/full-workflow' }
+            ]
+          },
+          { text: 'Reference', items: referenceItemsEn },
+          { text: 'More', items: [{ text: 'FAQ', link: '/faq' }] }
+        ]
+      }
+    },
+    es: {
+      label: 'Español',
+      lang: 'es',
+      link: '/es/',
+      title: 'jsonresume-tools',
+      description:
+        'Un conjunto de herramientas independientes para JSON Resume: chequeos de paridad multi-idioma, variantes por rol, y jrx — una CLI unificada que orquesta ambas (y resume-cli) entre idiomas y roles.',
+      themeConfig: {
+        nav: [
+          { text: 'Guía', link: '/es/guide/getting-started' },
+          { text: 'Referencia', link: '/es/reference/parity' },
+          { text: 'FAQ', link: '/es/faq' }
+        ],
+        sidebar: [
+          {
+            text: 'Guía',
+            items: [
+              { text: 'Primeros pasos', link: '/es/guide/getting-started' },
+              { text: '¿Qué herramienta necesito?', link: '/es/guide/which-tool' },
+              { text: 'Flujo completo', link: '/es/guide/full-workflow' }
+            ]
+          },
+          { text: 'Referencia', items: referenceItemsEs },
+          { text: 'Más', items: [{ text: 'FAQ', link: '/es/faq' }] }
+        ]
+      }
+    }
+  },
+
+  // Shared across all locales unless overridden above (search, social links, footer, edit link).
   themeConfig: {
     search: {
       provider: 'local'
     },
-
-    nav: [
-      { text: 'Guide', link: '/guide/getting-started' },
-      { text: 'Reference', link: '/reference/parity' },
-      { text: 'FAQ', link: '/faq' }
-    ],
-
-    sidebar: [
-      {
-        text: 'Guide',
-        items: [
-          { text: 'Getting started', link: '/guide/getting-started' },
-          { text: 'Which tool do I need?', link: '/guide/which-tool' },
-          { text: 'Full workflow', link: '/guide/full-workflow' }
-        ]
-      },
-      {
-        text: 'Reference',
-        items: [
-          { text: 'jsonresume-parity (jrp)', link: '/reference/parity' },
-          { text: 'jsonresume-tailor (jrt)', link: '/reference/tailor' },
-          { text: 'jsonresume-execute (jrx)', link: '/reference/execute' },
-          { text: 'jsonresume-lint (jrl)', link: '/reference/lint' },
-          { text: 'Config discovery', link: '/reference/config' }
-        ]
-      },
-      {
-        text: 'More',
-        items: [{ text: 'FAQ', link: '/faq' }]
-      }
-    ],
 
     socialLinks: [{ icon: 'github', link: 'https://github.com/cdrobayna/jsonresume-tools' }],
 
