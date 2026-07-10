@@ -1,0 +1,42 @@
+{
+  "name": "jsonresume-execute",
+  "version": "0.0.0",
+  "description": "Unified CLI that orchestrates jsonresume-lint, jsonresume-parity, jsonresume-tailor, and resume-cli across languages and role variants — without bundling them.",
+  "keywords": [
+    "json resume",
+    "jsonresume",
+    "resume",
+    "cv",
+    "cli",
+    "orchestrator"
+  ],
+  "license": "MIT",
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "bin": {
+    "jsonresume-execute": "./dist/bin.js",
+    "jrx": "./dist/bin.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json --noEmit && tsup"
+  },
+  "dependencies": {
+    "cosmiconfig": "^9.0.0"
+  },
+  "devDependencies": {
+    "@jsonresume-tools/core": "workspace:*"
+  }
+}

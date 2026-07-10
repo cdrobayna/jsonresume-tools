@@ -30,6 +30,16 @@ importers:
         specifier: ^9.0.0
         version: 9.0.2(typescript@5.9.3)
 
+  packages/execute:
+    dependencies:
+      cosmiconfig:
+        specifier: ^9.0.0
+        version: 9.0.2(typescript@5.9.3)
+    devDependencies:
+      '@jsonresume-tools/core':
+        specifier: workspace:*
+        version: link:../core
+
   packages/lint:
     dependencies:
       '@jsonresume/schema':

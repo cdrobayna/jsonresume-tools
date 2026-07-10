@@ -16,11 +16,18 @@ packages/
   lint/     jsonresume-lint          — published (per-file JSON Resume checks)
   parity/   jsonresume-parity        — published (multi-locale parity checks)
   tailor/   jsonresume-tailor        — published (role-tailored resume variants)
+  execute/  jsonresume-execute       — published (jrx: orchestrates the three above + resume-cli)
 fixtures/   shared good/bad JSON Resume fixtures used across packages' tests
 ```
 
 `@jsonresume-tools/core` is never published — don't add it as a dependency in anything
 outside this workspace, and don't design its API as if external consumers see it.
+
+`jsonresume-execute` is the one package allowed to know the others exist — but only by
+detecting and spawning their CLIs at runtime (`packages/execute/src/resolve.ts`/`spawn.ts`),
+never by importing them or listing them as a dependency. `jsonresume-lint`/`-parity`/`-tailor`
+must never depend on each other or on `jsonresume-execute`; if a change would introduce such a
+dependency, stop and flag it rather than adding it.
 
 ## Commands
 
