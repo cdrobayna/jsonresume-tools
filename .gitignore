@@ -6,6 +6,14 @@ dist/
 coverage/
 *.tgz
 
+# VitePress docs site — build cache and generated reference pages (see
+# docs/.vitepress/scripts/build-reference.mjs; docs/.vitepress/dist/ is already covered by dist/)
+docs/.vitepress/cache/
+docs/reference/lint.md
+docs/reference/parity.md
+docs/reference/tailor.md
+docs/reference/execute.md
+
 # OS / editor junk — harmless locally, noise in a public multi-contributor repo
 .DS_Store
 .vscode/

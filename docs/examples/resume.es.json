@@ -1,0 +1,136 @@
+{
+  "basics": {
+    "name": "Camila Duarte",
+    "label": "Ingeniera de Software",
+    "email": "camila.duarte@example.com",
+    "phone": "+1-555-017-2043",
+    "url": "https://camiladuarte.dev",
+    "summary": "Ingeniera de software con inclinación hacia backend, con experiencia tanto construyendo servicios como operando la infraestructura que los sostiene.",
+    "location": { "countryCode": "US" },
+    "profiles": [
+      { "network": "GitHub", "username": "camiladuarte", "url": "https://github.com/camiladuarte" }
+    ]
+  },
+  "work": [
+    {
+      "name": "NimbusPay",
+      "position": "Ingeniera Backend Senior",
+      "startDate": "2023-03",
+      "highlights": [
+        "Lideré el rediseño de la API de facturación por suscripción, hoy con más de 4M de solicitudes al mes.",
+        "Reduje la latencia p95 de la API en un 35% mediante réplicas de lectura y cacheo a nivel de consulta."
+      ],
+      "meta": { "tailor": { "tags": ["backend"] } }
+    },
+    {
+      "name": "Vantage Cloud",
+      "position": "Ingeniera de Plataforma",
+      "startDate": "2021-06",
+      "endDate": "2023-02",
+      "highlights": [
+        "Migré el pipeline de despliegue a GitHub Actions, reduciendo el tiempo de release de 40 a 9 minutos.",
+        "Lancé una librería compartida de módulos de Terraform adoptada por 12 equipos de producto."
+      ],
+      "meta": { "tailor": { "tags": ["platform"] } }
+    },
+    {
+      "name": "Solstice Retail",
+      "position": "Ingeniera de Backend y Plataforma",
+      "startDate": "2019-09",
+      "endDate": "2021-05",
+      "highlights": [
+        "Construí el servicio de checkout que absorbió el pico de tráfico del Black Friday.",
+        "Introduje despliegues blue-green, eliminando el tiempo de inactividad del checkout durante releases.",
+        "Escribí los manuales de guardia que el equipo de infraestructura todavía usa hoy."
+      ],
+      "meta": {
+        "tailor": {
+          "tags": ["backend", "platform"],
+          "highlightTags": {
+            "*": [1],
+            "backend": [0, 1],
+            "platform": [1, 2]
+          }
+        }
+      }
+    },
+    {
+      "name": "Aurora Systems",
+      "position": "Ingeniera de Software",
+      "startDate": "2017-08",
+      "endDate": "2019-08",
+      "highlights": [
+        "Roté entre backend, infraestructura y soporte en un equipo pequeño y generalista.",
+        "Escribí la primera suite de pruebas automatizadas del equipo, elevando la cobertura del 12% al 70%."
+      ],
+      "meta": { "tailor": { "tags": ["core"] } }
+    }
+  ],
+  "skills": [
+    {
+      "name": "Backend y Datos",
+      "keywords": ["Node.js", "TypeScript", "NestJS", "PostgreSQL"],
+      "meta": { "tailor": { "tags": ["backend"] } }
+    },
+    {
+      "name": "Nube y Plataforma",
+      "keywords": ["Kubernetes", "Terraform", "AWS"],
+      "meta": { "tailor": { "tags": ["platform"] } }
+    },
+    {
+      "name": "Lenguajes y Herramientas",
+      "keywords": ["Node.js", "TypeScript", "Python", "Bash"],
+      "meta": {
+        "tailor": {
+          "tags": ["backend", "platform"],
+          "keywordTags": { "backend": [0, 1], "platform": [2, 3] }
+        }
+      }
+    },
+    {
+      "name": "Fundamentos",
+      "keywords": ["Git", "Linux", "CI/CD"],
+      "meta": { "tailor": { "tags": ["core"] } }
+    }
+  ],
+  "projects": [
+    {
+      "name": "Servicio de Conciliación de Pagos",
+      "description": "Conciliación nocturna entre el libro mayor de pagos y el feed de liquidación bancaria.",
+      "highlights": [
+        "Reemplacé una conciliación manual en hoja de cálculo por un job nocturno automatizado.",
+        "Reduje las discrepancias no resueltas de aproximadamente 40 al mes a menos de 3."
+      ],
+      "meta": { "tailor": { "tags": ["backend"] } }
+    },
+    {
+      "name": "Despliegue de Autoescalado de Clúster",
+      "description": "Autoescalado consciente de la carga para la plataforma compartida de Kubernetes.",
+      "highlights": [
+        "Implementé autoescalado de clúster en 6 clústeres de producción.",
+        "Reduje el gasto de cómputo ocioso en un 30% sin afectar la latencia p95 de scheduling."
+      ],
+      "meta": { "tailor": { "tags": ["platform"] } }
+    }
+  ],
+  "education": [
+    {
+      "institution": "University of Texas at Austin",
+      "area": "Ciencias de la Computación",
+      "studyType": "B.Sc.",
+      "startDate": "2012-08",
+      "endDate": "2016-05",
+      "meta": { "tailor": { "tags": ["core"] } }
+    }
+  ],
+  "awards": [
+    {
+      "title": "Premio a la Excelencia en Ingeniería",
+      "date": "2024-06",
+      "awarder": "NimbusPay",
+      "summary": "Reconocida por liderar el rediseño de la API de facturación por suscripción.",
+      "meta": { "tailor": { "tags": ["core"] } }
+    }
+  ],
+  "meta": { "language": "es" }
+}
