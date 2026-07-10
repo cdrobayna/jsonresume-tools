@@ -1,5 +1,5 @@
 import { stripTailorMeta } from './strip.js'
-import type { JsonResume, ResumeEntry, Variant } from './types/resume.js'
+import type { JsonResume, ResumeEntry, TailorMeta, Variant } from './types/resume.js'
 
 /** Sections that are filtered by `meta.tailor.tags`. Everything else (`basics`, `languages`,
  * `interests`, `references`, ...) passes through `tailor()` unfiltered. */
@@ -13,6 +13,21 @@ export const FILTERABLE_SECTIONS = [
   'publications',
   'volunteer'
 ] as const
+
+/** Array fields on resume entries that support per-tag index filtering via a corresponding
+ * `*Tags` map in `meta.tailor`. Adding a new field here (+ the type in TailorMeta/ResumeEntry)
+ * is all that's needed to support it in both `tailor()` and `checkTailor()`. */
+export const TAGGABLE_FIELDS: ReadonlyArray<{
+  field: keyof ResumeEntry & string
+  metaKey: keyof TailorMeta & string
+  label: string
+  ruleName: string
+  code: string
+}> = [
+  { field: 'highlights', metaKey: 'highlightTags', label: 'highlight', ruleName: 'tailorHighlightIndex', code: 'TAILOR_HIGHLIGHT_INDEX' },
+  { field: 'keywords', metaKey: 'keywordTags', label: 'keyword', ruleName: 'tailorKeywordIndex', code: 'TAILOR_KEYWORD_INDEX' },
+  { field: 'courses', metaKey: 'courseTags', label: 'course', ruleName: 'tailorCourseIndex', code: 'TAILOR_COURSE_INDEX' }
+]
 
 /** The section's target field for `meta.tailor.labelPerTag`, where one exists. */
 const LABEL_FIELD_BY_SECTION: Record<string, 'name' | 'position'> = {
@@ -34,8 +49,7 @@ export interface TailorOptions {
 export interface TailorSectionSummary {
   before: number
   after: number
-  highlightsBefore?: number
-  highlightsAfter?: number
+  arrayStats?: Record<string, { before: number; after: number }>
 }
 
 export interface TailorSummary {
@@ -64,7 +78,7 @@ function entryTags(entry: ResumeEntry): string[] | undefined {
 /** Unions `tagIndices["*"]` with `tagIndices[t]` for every active tag `t`, then filters `values`
  * down to those indices, preserving original order and de-duplicating. Out-of-range indices are
  * silently dropped (they never match any array position). A missing or empty `tagIndices` map is
- * a no-op — every value is kept. Shared by `filterHighlights` and `filterKeywords`. */
+ * a no-op — every value is kept. */
 function filterByTagIndices<T>(
   values: T[] | undefined,
   tagIndices: Record<string, number[]> | undefined,
@@ -81,18 +95,14 @@ function filterByTagIndices<T>(
   return values.filter((_, index) => keep.has(index))
 }
 
-/** Filters `entry.highlights` per `meta.tailor.highlightTags` (see `filterByTagIndices`). */
-function filterHighlights(entry: ResumeEntry, activeTags: Set<string>): void {
-  if (!Array.isArray(entry.highlights)) return
-  entry.highlights = filterByTagIndices(entry.highlights, entry.meta?.tailor?.highlightTags, activeTags)
-}
-
-/** Filters `entry.keywords` per `meta.tailor.keywordTags` (see `filterByTagIndices`). Lets a
- * mixed-stack skill/project entry show only the keywords relevant to the active variant without
- * being split into separate entries. */
-function filterKeywords(entry: ResumeEntry, activeTags: Set<string>): void {
-  if (!Array.isArray(entry.keywords)) return
-  entry.keywords = filterByTagIndices(entry.keywords, entry.meta?.tailor?.keywordTags, activeTags)
+/** Filters every taggable array field on `entry` per its corresponding `*Tags` map. */
+function filterTaggableFields(entry: ResumeEntry, activeTags: Set<string>): void {
+  for (const { field, metaKey } of TAGGABLE_FIELDS) {
+    const values = entry[field]
+    if (!Array.isArray(values)) continue
+    const tagIndices = entry.meta?.tailor?.[metaKey] as Record<string, number[]> | undefined
+    entry[field] = filterByTagIndices(values, tagIndices, activeTags)
+  }
 }
 
 /** Applies the first `labelPerTag` match found in `[variant.tag, ...variant.also]` order — the
@@ -158,10 +168,12 @@ export function tailor(resume: JsonResume, variant: Variant, options: TailorOpti
     if (!entries) continue
 
     const before = entries.length
-    const hasHighlights = entries.some((entry) => Array.isArray(entry.highlights))
-    const highlightsBefore = hasHighlights
-      ? entries.reduce((sum, entry) => sum + (entry.highlights?.length ?? 0), 0)
-      : undefined
+
+    const arrayCountsBefore: Record<string, number> = {}
+    for (const { field } of TAGGABLE_FIELDS) {
+      const total = entries.reduce((sum, entry) => sum + (Array.isArray(entry[field]) ? (entry[field] as unknown[]).length : 0), 0)
+      if (total > 0) arrayCountsBefore[field] = total
+    }
 
     const filtered = entries.filter((entry) => {
       const tags = entryTags(entry)
@@ -169,8 +181,7 @@ export function tailor(resume: JsonResume, variant: Variant, options: TailorOpti
     })
 
     for (const entry of filtered) {
-      filterHighlights(entry, activeTags)
-      filterKeywords(entry, activeTags)
+      filterTaggableFields(entry, activeTags)
       applyLabelPerTag(entry, section, activeOrder)
       stripTailorMeta(entry)
     }
@@ -179,15 +190,20 @@ export function tailor(resume: JsonResume, variant: Variant, options: TailorOpti
     const limited = typeof limit === 'number' ? filtered.slice(0, limit) : filtered
 
     out[section] = limited
+
+    const arrayStats: Record<string, { before: number; after: number }> = {}
+    for (const { field } of TAGGABLE_FIELDS) {
+      if (!(field in arrayCountsBefore)) continue
+      arrayStats[field] = {
+        before: arrayCountsBefore[field],
+        after: limited.reduce((sum, entry) => sum + (Array.isArray(entry[field]) ? (entry[field] as unknown[]).length : 0), 0)
+      }
+    }
+
     sections[section] = {
       before,
       after: limited.length,
-      ...(hasHighlights
-        ? {
-            highlightsBefore,
-            highlightsAfter: limited.reduce((sum, entry) => sum + (entry.highlights?.length ?? 0), 0)
-          }
-        : {})
+      ...(Object.keys(arrayStats).length > 0 ? { arrayStats } : {})
     }
   }
 

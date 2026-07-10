@@ -58,6 +58,22 @@ describe('checkTailor', () => {
     expect(codesOf(result.errors)).toContain('TAILOR_KEYWORD_INDEX')
   })
 
+  it('flags an out-of-range courseTags index as a hard error', () => {
+    const resume: JsonResume = {
+      education: [
+        {
+          institution: 'MIT',
+          courses: ['CS101', 'CS201'],
+          meta: { tailor: { tags: ['dev'], courseTags: { dev: [0, 9] } } }
+        }
+      ]
+    }
+    const variants: Variant[] = [{ name: 'dev', tag: 'dev' }]
+
+    const result = checkTailor(resume, variants)
+    expect(codesOf(result.errors)).toContain('TAILOR_COURSE_INDEX')
+  })
+
   it('flags meta.tailor present with empty or missing tags', () => {
     const resume: JsonResume = { work: [{ name: 'Acme', meta: { tailor: {} } }] }
 

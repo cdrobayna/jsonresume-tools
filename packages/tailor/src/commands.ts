@@ -101,11 +101,11 @@ export async function runBuild(argv: string[]): Promise<CommandResult> {
 
   const lines = [`[tailor] ${variant.name} → ${dryRun ? '(dry run)' : flags.out}`]
   for (const [section, sectionSummary] of Object.entries(summary.sections)) {
-    const highlights =
-      sectionSummary.highlightsBefore !== undefined
-        ? ` (highlights: ${sectionSummary.highlightsBefore} → ${sectionSummary.highlightsAfter})`
-        : ''
-    lines.push(`[tailor] ${section}: ${sectionSummary.before} → ${sectionSummary.after} entries${highlights}`)
+    const stats = Object.entries(sectionSummary.arrayStats ?? {})
+      .map(([field, { before, after }]) => `${field}: ${before} → ${after}`)
+      .join(', ')
+    const extra = stats ? ` (${stats})` : ''
+    lines.push(`[tailor] ${section}: ${sectionSummary.before} → ${sectionSummary.after} entries${extra}`)
   }
 
   if (!dryRun) {
