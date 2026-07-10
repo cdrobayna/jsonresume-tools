@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest'
-import { CliUsageError, parseArgs, runSubcommandCli } from './cli.js'
+import { CliUsageError, extractLocale, parseArgs, parseFlags, runCli, runSubcommandCli } from './cli.js'
 
 describe('parseArgs', () => {
   it('collects positional files', () => {
@@ -42,6 +42,38 @@ describe('parseArgs', () => {
     expect(parseArgs(['--help']).help).toBe(true)
     expect(parseArgs(['-h']).help).toBe(true)
   })
+
+  it('parses --version', () => {
+    expect(parseArgs(['--version']).version).toBe(true)
+    expect(parseArgs(['a.json']).version).toBe(false)
+  })
+})
+
+describe('runCli', () => {
+  it('prints the configured version and exits 0 on --version, without requiring files', async () => {
+    const log = vi.spyOn(console, 'log').mockImplementation(() => {})
+    const code = await runCli(['--version'], {
+      name: 'tool',
+      helpText: 'HELP',
+      version: '1.2.3',
+      run: async () => ({ hasErrors: false, output: '' })
+    })
+    expect(code).toBe(0)
+    expect(log).toHaveBeenCalledWith('1.2.3')
+    log.mockRestore()
+  })
+
+  it('falls back to 0.0.0 when no version is configured', async () => {
+    const log = vi.spyOn(console, 'log').mockImplementation(() => {})
+    const code = await runCli(['--version'], {
+      name: 'tool',
+      helpText: 'HELP',
+      run: async () => ({ hasErrors: false, output: '' })
+    })
+    expect(code).toBe(0)
+    expect(log).toHaveBeenCalledWith('0.0.0')
+    log.mockRestore()
+  })
 })
 
 describe('runSubcommandCli', () => {
@@ -68,6 +100,23 @@ describe('runSubcommandCli', () => {
     expect(code).toBe(2)
     expect(error).toHaveBeenCalledWith('tool: unknown command "bogus"')
     error.mockRestore()
+  })
+
+  it('prints the configured version and exits 0 on --version/-V', async () => {
+    const log = vi.spyOn(console, 'log').mockImplementation(() => {})
+    const opts = { name: 'tool', helpText: 'HELP', version: '1.2.3', commands: { noop } }
+    expect(await runSubcommandCli(['--version'], opts)).toBe(0)
+    expect(await runSubcommandCli(['-V'], opts)).toBe(0)
+    expect(log).toHaveBeenCalledWith('1.2.3')
+    log.mockRestore()
+  })
+
+  it('falls back to 0.0.0 when no version is configured', async () => {
+    const log = vi.spyOn(console, 'log').mockImplementation(() => {})
+    const code = await runSubcommandCli(['--version'], { name: 'tool', helpText: 'HELP', commands: { noop } })
+    expect(code).toBe(0)
+    expect(log).toHaveBeenCalledWith('0.0.0')
+    log.mockRestore()
   })
 
   it('dispatches to the matching command with the remaining argv', async () => {
@@ -122,5 +171,57 @@ describe('runSubcommandCli', () => {
     expect(code).toBe(2)
     expect(error).toHaveBeenCalledWith('boom')
     error.mockRestore()
+  })
+})
+
+describe('parseFlags', () => {
+  it('collects positionals and separates value/boolean flags', () => {
+    const result = parseFlags(['backend', '--resume', 'r.json', '--verbose'], ['resume'], ['verbose'])
+    expect(result.positional).toEqual(['backend'])
+    expect(result.flags).toEqual({ resume: 'r.json' })
+    expect(result.booleans).toEqual(new Set(['verbose']))
+  })
+
+  it('resolves single-character short flags to their long name', () => {
+    const result = parseFlags(['-r', 'r.json', '-v'], ['resume'], ['verbose'], { r: 'resume', v: 'verbose' })
+    expect(result.flags).toEqual({ resume: 'r.json' })
+    expect(result.booleans).toEqual(new Set(['verbose']))
+  })
+
+  it('throws on an unknown long flag', () => {
+    expect(() => parseFlags(['--nope'], [], [])).toThrow(CliUsageError)
+  })
+
+  it('throws on an unknown short flag', () => {
+    expect(() => parseFlags(['-z'], [], [])).toThrow(CliUsageError)
+  })
+
+  it('throws when a value flag is missing its value', () => {
+    expect(() => parseFlags(['--resume'], ['resume'], [])).toThrow(CliUsageError)
+    expect(() => parseFlags(['-r'], ['resume'], [], { r: 'resume' })).toThrow(CliUsageError)
+  })
+
+  it('does not bundle multi-character short flags', () => {
+    // "-rd" is length 3, so it falls through to positional rather than being split into -r -d
+    const result = parseFlags(['-rd'], [], [])
+    expect(result.positional).toEqual(['-rd'])
+  })
+})
+
+describe('extractLocale', () => {
+  it('extracts a two-letter locale suffix', () => {
+    expect(extractLocale('resume.en.json')).toBe('en')
+  })
+
+  it('extracts a region-qualified locale suffix', () => {
+    expect(extractLocale('resume.en-US.json')).toBe('en-US')
+  })
+
+  it('ignores directory components', () => {
+    expect(extractLocale('dist/variants/backend.es.json')).toBe('es')
+  })
+
+  it('returns undefined when there is no locale suffix', () => {
+    expect(extractLocale('resume.json')).toBeUndefined()
   })
 })

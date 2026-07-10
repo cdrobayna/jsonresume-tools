@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { runSubcommandCli } from '@jsonresume-tools/core'
+import { readOwnVersion, runSubcommandCli } from '@jsonresume-tools/core'
 import { runBuild, runCheck, runInspect, runList } from './commands.js'
 
 const HELP = `Usage: jrt <command> [options]    (alias: jsonresume-tailor)
@@ -11,6 +11,10 @@ Commands:
   inspect           Show indexed taggable fields and tag maps for resume entries
   list              List the variants found in a variants directory
   check [<variant>] Check meta.tailor annotations for coherence against the variants
+
+Global options:
+  -h, --help       Show this help
+  -V, --version    Show version number
 
 build (single):
   jrt build <variant>
@@ -55,6 +59,7 @@ Examples:
 
 const code = await runSubcommandCli(process.argv.slice(2), {
   name: 'jsonresume-tailor',
+  version: readOwnVersion(import.meta.url),
   helpText: HELP,
   commands: {
     build: { describe: 'Filter the master resume through a variant and write the result', run: runBuild },

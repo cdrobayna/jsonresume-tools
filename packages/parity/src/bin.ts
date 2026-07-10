@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { loadConfig, report, runCli, type Severity } from '@jsonresume-tools/core'
+import { loadConfig, readOwnVersion, report, runCli, type Severity } from '@jsonresume-tools/core'
 import { resolveLocaleInputs } from './cli-locale.js'
 import { checkParity, defaults } from './index.js'
 
@@ -14,6 +14,7 @@ Options:
   --format <text|json>       Output format (default: text)
   -c, --config <path>        Explicit config file path
   -h, --help                 Show this help
+  --version                  Show version number
 
 Examples:
   jsonresume-parity resume.en.json resume.es.json
@@ -28,6 +29,7 @@ function isSeverity(value: string): value is Severity {
 
 const exitCode = await runCli(process.argv.slice(2), {
   name: 'jsonresume-parity',
+  version: readOwnVersion(import.meta.url),
   helpText: HELP,
   async run(args) {
     const locales = resolveLocaleInputs(args.files)
