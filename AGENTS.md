@@ -23,6 +23,14 @@ fixtures/   shared good/bad JSON Resume fixtures used across packages' tests
 `@jsonresume-tools/core` is never published — don't add it as a dependency in anything
 outside this workspace, and don't design its API as if external consumers see it.
 
+All four published packages bundle `@jsonresume-tools/core` into their output (tsup
+`noExternal`), and core's config module imports `cosmiconfig` at the top level. That's why
+`cosmiconfig` is a direct runtime dependency of all four — but only `jsonresume-lint` and
+`jsonresume-parity` actually call `loadConfig`. Its presence in `jsonresume-tailor`'s and
+`jsonresume-execute`'s `package.json` is a bundling artifact, not an unfinished config
+feature; don't remove it expecting those packages to still load (it'd break the import that
+survives into their bundle).
+
 `jsonresume-execute` is the one package allowed to know the others exist — but only by
 detecting and spawning their CLIs at runtime (`packages/execute/src/resolve.ts`/`spawn.ts`),
 never by importing them or listing them as a dependency. `jsonresume-lint`/`-parity`/`-tailor`
