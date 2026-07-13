@@ -9,6 +9,7 @@ import { runCheck } from './check.js'
 interface Call {
   execPath: string
   args: string[]
+  env?: NodeJS.ProcessEnv
 }
 
 function makeSpawnStub(resultByBin: (execPath: string, args: string[]) => Partial<SpawnResult> = () => ({})): {
@@ -16,8 +17,8 @@ function makeSpawnStub(resultByBin: (execPath: string, args: string[]) => Partia
   calls: Call[]
 } {
   const calls: Call[] = []
-  const spawn: SpawnFn = async (execPath, args) => {
-    calls.push({ execPath, args })
+  const spawn: SpawnFn = async (execPath, args, opts) => {
+    calls.push({ execPath, args, env: opts?.env })
     return { code: 0, stdout: '', stderr: '', ...resultByBin(execPath, args) }
   }
   return { spawn, calls }
@@ -125,6 +126,57 @@ describe('runCheck', () => {
     const { spawn } = makeSpawnStub((execPath) => (execPath.includes('jsonresume-lint') ? { code: 1 } : {}))
     const result = await runCheck([], { spawn, cwd })
     expect(result.code).toBe(1)
+  })
+
+  it('runs the audit step without a system Chromium — lets Puppeteer self-resolve instead of throwing', async () => {
+    const cwd = await fixtureRepo()
+    await makeBin(cwd, 'jsonresume-parity')
+    await makeBin(cwd, 'resume')
+    // Deliberately no `chromium` bin, and PATH is scoped to only the temp .bin dir — mirrors
+    // ISSUE-chromium-detection.md: no system Chromium, no PUPPETEER_EXECUTABLE_PATH, but
+    // resume-cli's own Puppeteer would resolve its own Chrome.
+    const originalPath = process.env.PATH
+    const originalExecPath = process.env.PUPPETEER_EXECUTABLE_PATH
+    process.env.PATH = path.join(cwd, 'node_modules', '.bin')
+    delete process.env.PUPPETEER_EXECUTABLE_PATH
+    try {
+      const { spawn, calls } = makeSpawnStub()
+      const result = await runCheck(['--theme', 'my-theme'], { spawn, cwd })
+
+      expect(result.code).toBe(0)
+      const auditCalls = calls.filter((c) => c.args[0] === 'audit')
+      expect(auditCalls.length).toBeGreaterThan(0)
+      for (const call of auditCalls) {
+        expect(call.env?.PUPPETEER_EXECUTABLE_PATH).toBeUndefined()
+        expect(call.env?.RESUME_PUPPETEER_NO_SANDBOX).toBeUndefined()
+      }
+    } finally {
+      process.env.PATH = originalPath
+      if (originalExecPath === undefined) delete process.env.PUPPETEER_EXECUTABLE_PATH
+      else process.env.PUPPETEER_EXECUTABLE_PATH = originalExecPath
+    }
+  })
+
+  it('still overrides PUPPETEER_EXECUTABLE_PATH for audit when a system Chromium is found', async () => {
+    const cwd = await fixtureRepo()
+    await makeBin(cwd, 'jsonresume-parity')
+    await makeBin(cwd, 'resume')
+    await makeBin(cwd, 'chromium')
+    const originalPath = process.env.PATH
+    process.env.PATH = `${path.join(cwd, 'node_modules', '.bin')}${path.delimiter}${originalPath ?? ''}`
+    try {
+      const { spawn, calls } = makeSpawnStub()
+      await runCheck(['--theme', 'my-theme'], { spawn, cwd })
+
+      const auditCalls = calls.filter((c) => c.args[0] === 'audit')
+      expect(auditCalls.length).toBeGreaterThan(0)
+      for (const call of auditCalls) {
+        expect(call.env?.PUPPETEER_EXECUTABLE_PATH).toBe(path.join(cwd, 'node_modules', '.bin', 'chromium'))
+        expect(call.env?.RESUME_PUPPETEER_NO_SANDBOX).toBe('1')
+      }
+    } finally {
+      process.env.PATH = originalPath
+    }
   })
 
   it('returns exit 2 with no throw when no masters are found', async () => {

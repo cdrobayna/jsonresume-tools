@@ -1,5 +1,5 @@
 import path from 'node:path'
-import { CliUsageError, type CommandResult, parseFlags } from '@jsonresume-tools/core'
+import { type CommandResult, parseFlags } from '@jsonresume-tools/core'
 import { chromiumEnv } from '../env.js'
 import { discoverMasters, discoverMatrixFiles } from '../matrix.js'
 import { aggregate, formatReport, type StepResult } from '../report.js'
@@ -63,13 +63,10 @@ export async function runAll(argv: string[], deps: RunAllDeps = {}): Promise<Com
     steps.push({ label: 'export', tool: 'resume', code: 0, skipped: true, stdout: 'no --theme given — skipped (pass --theme to export PDFs/HTML)' })
   } else {
     const resumeTool = requireTool('resume', { cwd })
-    const env = chromiumEnv()
-    if (!env) {
-      throw new CliUsageError(
-        "no Chromium/Chrome found for `resume export` (needed by resume-cli's Puppeteer-based renderer). " +
-          'Install Chromium/Chrome or set PUPPETEER_EXECUTABLE_PATH.'
-      )
-    }
+    // No hard gate here: when chromiumEnv() finds nothing, we pass process.env through
+    // unmodified and let resume-cli's own Puppeteer resolve its bundled/downloaded Chrome,
+    // exactly as it does standalone. Only override when a system Chromium was explicitly found.
+    const chromiumOverride = chromiumEnv()
 
     const masters = await discoverMasters(cwd)
     const matrixFiles = await discoverMatrixFiles(cwd, outDir)
@@ -89,7 +86,7 @@ export async function runAll(argv: string[], deps: RunAllDeps = {}): Promise<Com
       const outPath = path.join(outDir, `cv.${target.slug}.${exportFormat}`)
       const result = await spawn(resumeTool.execPath, ['export', outPath, '--theme', flags.theme, '--resume', target.path], {
         cwd,
-        env: { ...process.env, ...env }
+        env: { ...process.env, ...chromiumOverride }
       })
       steps.push({ label: `export (${target.path})`, tool: 'resume', code: result.code, stdout: result.stdout, stderr: result.stderr })
     }

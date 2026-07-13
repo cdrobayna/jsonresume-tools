@@ -57,4 +57,43 @@ describe('runDoctor', () => {
     const result = await runDoctor([], { cwd })
     expect(result.stdout).toContain('All recommended tools are installed.')
   })
+
+  describe('Chromium/Chrome reporting', () => {
+    const originalPath = process.env.PATH
+    const originalExecPath = process.env.PUPPETEER_EXECUTABLE_PATH
+
+    afterEach(() => {
+      process.env.PATH = originalPath
+      if (originalExecPath === undefined) delete process.env.PUPPETEER_EXECUTABLE_PATH
+      else process.env.PUPPETEER_EXECUTABLE_PATH = originalExecPath
+    })
+
+    it('reports ✗ Chromium/Chrome when there is no system Chromium and no Puppeteer install', async () => {
+      const cwd = await tempDir()
+      process.env.PATH = cwd
+      delete process.env.PUPPETEER_EXECUTABLE_PATH
+
+      const result = await runDoctor([], { cwd })
+      expect(result.stdout).toContain('✗ Chromium/Chrome — not found')
+    })
+
+    it('reports ✓ Chromium/Chrome (Puppeteer-managed) when only resume-cli\'s own Puppeteer resolves one', async () => {
+      const cwd = await tempDir()
+      process.env.PATH = cwd
+      delete process.env.PUPPETEER_EXECUTABLE_PATH
+
+      const chromeDir = path.join(cwd, 'fake-chrome')
+      await mkdir(chromeDir, { recursive: true })
+      const chromePath = path.join(chromeDir, 'chrome')
+      await writeFile(chromePath, '')
+
+      const puppeteerDir = path.join(cwd, 'node_modules', 'puppeteer')
+      await mkdir(puppeteerDir, { recursive: true })
+      await writeFile(path.join(puppeteerDir, 'package.json'), JSON.stringify({ name: 'puppeteer', version: '23.11.1', main: 'index.js' }))
+      await writeFile(path.join(puppeteerDir, 'index.js'), `module.exports = { executablePath: () => ${JSON.stringify(chromePath)} }\n`)
+
+      const result = await runDoctor([], { cwd })
+      expect(result.stdout).toContain(`✓ Chromium/Chrome — ${chromePath} (Puppeteer-managed)`)
+    })
+  })
 })

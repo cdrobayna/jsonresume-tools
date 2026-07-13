@@ -9,6 +9,7 @@ import { runAll } from './all.js'
 interface Call {
   execPath: string
   args: string[]
+  env?: NodeJS.ProcessEnv
 }
 
 function makeSpawnStub(resultByBin: (execPath: string, args: string[]) => Partial<SpawnResult> = () => ({})): {
@@ -16,8 +17,8 @@ function makeSpawnStub(resultByBin: (execPath: string, args: string[]) => Partia
   calls: Call[]
 } {
   const calls: Call[] = []
-  const spawn: SpawnFn = async (execPath, args) => {
-    calls.push({ execPath, args })
+  const spawn: SpawnFn = async (execPath, args, opts) => {
+    calls.push({ execPath, args, env: opts?.env })
     return { code: 0, stdout: '', stderr: '', ...resultByBin(execPath, args) }
   }
   return { spawn, calls }
@@ -112,6 +113,55 @@ describe('runAll', () => {
       expect(exportPaths).toContain(path.join('dist', 'cv.backend.en.pdf'))
       expect(exportPaths).not.toContain(path.join('dist', 'cv.resume.en.pdf'))
       expect(exportPaths).not.toContain(path.join('dist', 'cv.resume.es.pdf'))
+    } finally {
+      process.env.PATH = originalPath
+    }
+  })
+
+  it('exports without a system Chromium — lets Puppeteer self-resolve instead of throwing', async () => {
+    const cwd = await fixtureRepo()
+    await makeBin(cwd, 'resume')
+    // Deliberately no `chromium` bin on PATH, and PATH is scoped to only the temp .bin dir —
+    // this is the exact scenario from ISSUE-chromium-detection.md: no system Chromium, no
+    // PUPPETEER_EXECUTABLE_PATH, but resume-cli's own Puppeteer would resolve its own Chrome.
+    const originalPath = process.env.PATH
+    const originalExecPath = process.env.PUPPETEER_EXECUTABLE_PATH
+    process.env.PATH = path.join(cwd, 'node_modules', '.bin')
+    delete process.env.PUPPETEER_EXECUTABLE_PATH
+    try {
+      const { spawn, calls } = makeSpawnStub()
+      const result = await runAll(['--theme', 'my-theme'], { spawn, cwd })
+
+      expect(result.code).toBe(0)
+      const exportCalls = calls.filter((c) => c.args[0] === 'export')
+      expect(exportCalls.length).toBeGreaterThan(0)
+      for (const call of exportCalls) {
+        expect(call.env?.PUPPETEER_EXECUTABLE_PATH).toBeUndefined()
+        expect(call.env?.RESUME_PUPPETEER_NO_SANDBOX).toBeUndefined()
+      }
+    } finally {
+      process.env.PATH = originalPath
+      if (originalExecPath === undefined) delete process.env.PUPPETEER_EXECUTABLE_PATH
+      else process.env.PUPPETEER_EXECUTABLE_PATH = originalExecPath
+    }
+  })
+
+  it('still overrides PUPPETEER_EXECUTABLE_PATH when a system Chromium is found', async () => {
+    const cwd = await fixtureRepo()
+    await makeBin(cwd, 'resume')
+    await makeBin(cwd, 'chromium')
+    const originalPath = process.env.PATH
+    process.env.PATH = `${path.join(cwd, 'node_modules', '.bin')}${path.delimiter}${originalPath ?? ''}`
+    try {
+      const { spawn, calls } = makeSpawnStub()
+      await runAll(['--theme', 'my-theme'], { spawn, cwd })
+
+      const exportCalls = calls.filter((c) => c.args[0] === 'export')
+      expect(exportCalls.length).toBeGreaterThan(0)
+      for (const call of exportCalls) {
+        expect(call.env?.PUPPETEER_EXECUTABLE_PATH).toBe(path.join(cwd, 'node_modules', '.bin', 'chromium'))
+        expect(call.env?.RESUME_PUPPETEER_NO_SANDBOX).toBe('1')
+      }
     } finally {
       process.env.PATH = originalPath
     }

@@ -1,5 +1,5 @@
 import type { CommandResult } from '@jsonresume-tools/core'
-import { detectChromium } from '../env.js'
+import { detectChromium, detectPuppeteerChromium } from '../env.js'
 import { detectPackageManager, installCommand } from '../pm.js'
 import { REGISTRY, resolveTool, type ToolId } from '../resolve.js'
 
@@ -33,9 +33,10 @@ export async function runDoctor(_argv: string[], deps: RunDoctorDeps = {}): Prom
   }
 
   lines.push('')
-  const chromium = detectChromium()
+  const systemChromium = detectChromium()
+  const chromium = systemChromium ?? detectPuppeteerChromium(cwd)
   if (chromium) {
-    lines.push(`✓ Chromium/Chrome — ${chromium}`)
+    lines.push(`✓ Chromium/Chrome — ${chromium}${systemChromium ? '' : ' (Puppeteer-managed)'}`)
   } else {
     lines.push('✗ Chromium/Chrome — not found (needed by `resume export`/`resume audit`)')
     lines.push('    install: your OS package manager, or set PUPPETEER_EXECUTABLE_PATH')
