@@ -7,11 +7,11 @@ hero:
   tagline: Tu currículum se mantiene sincronizado entre idiomas, se adapta a cada rol y se valida solo. Todo con una sola CLI.
   actions:
     - theme: brand
-      text: Ver el flujo completo
-      link: /es/guide/full-workflow
+      text: Primeros pasos
+      link: /es/guide/getting-started
     - theme: alt
-      text: Ver en GitHub
-      link: https://github.com/cdrobayna/jsonresume-tools
+      text: Míralo todo funcionando junto
+      link: /es/guide/full-workflow
 
 features:
   - title: En sintonía
