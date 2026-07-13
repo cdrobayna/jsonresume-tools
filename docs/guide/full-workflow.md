@@ -223,4 +223,4 @@ above. See [`/reference/execute`](/reference/execute) for the full flag referenc
   (`highlightTags`, `keywordTags`, `courseTags`, `labelPerTag`, `limits`).
 - [`/reference/execute`](/reference/execute): every `jrx` subcommand and flag.
 - [`/reference/config`](/reference/config): configuring `jrl`/`jrp` rule severities via a config
-  file instead of `--rule` flags.
+  file instead of `--rule` flags, and setting `jrx`'s default `--theme` in the same file.

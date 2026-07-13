@@ -225,4 +225,5 @@ la referencia completa de flags (en inglés).
   (`highlightTags`, `keywordTags`, `courseTags`, `labelPerTag`, `limits`). En inglés.
 - [`/reference/execute`](/es/reference/execute): cada subcomando y flag de `jrx`. En inglés.
 - [`/reference/config`](/es/reference/config): configurando la severidad de reglas de `jrl`/`jrp`
-  vía un archivo de config en vez de flags `--rule`. En inglés.
+  vía un archivo de config en vez de flags `--rule`, y el `--theme` por defecto de `jrx` en ese
+  mismo archivo. En inglés.
