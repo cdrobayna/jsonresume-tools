@@ -9,7 +9,7 @@ Checks structural and content parity across locale variants of a [JSON Resume](h
 strings).
 
 No package in the JSON Resume ecosystem (resumed, hackmyresume, resume-cli, rendercv) checks
-multi-locale parity — this fills that gap.
+multi-locale parity. This fills that gap.
 
 ## Install
 
@@ -21,7 +21,7 @@ npm install --save-dev jsonresume-parity
 
 The bin is installed as both `jsonresume-parity` and the shorter alias `jrp`.
 
-Files use the convention `<anything>.<locale>.json` — the **first file given is the baseline**;
+Files use the convention `<anything>.<locale>.json`: the **first file given is the baseline**;
 every other file is compared against it.
 
 ```bash
@@ -102,13 +102,13 @@ await checkParity({
 
 **Identity arrays (default):** `keywords`, `tags`.
 
-**Proper-noun fields (default)** — skip `identicalTranslation` only: `name`, `institution`.
+**Proper-noun fields (default):** `name`, `institution`. These skip `identicalTranslation` only.
 
 ## Config discovery
 
-`jrp` reads its config from the `parity` section of a shared `.jsonresumetoolsrc` file — the same
-file `jrl` (jsonresume-lint) and `jrx` (jsonresume-execute) read their own sections from, so one
-file covers every tool you use:
+`jrp` reads its config from the `parity` section of a shared `.jsonresumetoolsrc` file. `jrl`
+(jsonresume-lint) and `jrx` (jsonresume-execute) read their own sections from the same file,
+so one file covers every tool you use:
 
 ```json
 // .jsonresumetoolsrc.json

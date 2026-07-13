@@ -4,11 +4,11 @@
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](../../LICENSE)
 
 Generate role-tailored variants of a [JSON Resume](https://jsonresume.org) from a single
-annotated master resume. Annotate `work`/`education`/`skills`/`projects`/`awards`/`certificates`/
+annotated base resume. Annotate `work`/`education`/`skills`/`projects`/`awards`/`certificates`/
 `publications`/`volunteer` entries with tags under `meta.tailor`, declare a variant per target
 role (`backend`, `devops`, `sysadmin`, ...), and `jsonresume-tailor build <variant>` emits a
-filtered resume that's canonical JSON Resume — no trace of `tailor` left in it, so any theme or
-official tool (`resume-cli`, `resumed`, ...) renders it unmodified.
+filtered resume that's canonical JSON Resume, with no trace of `tailor` left in it, so any theme
+or official tool (`resume-cli`, `resumed`, ...) renders it unmodified.
 
 ## Install
 
@@ -16,7 +16,7 @@ official tool (`resume-cli`, `resumed`, ...) renders it unmodified.
 npm install --save-dev jsonresume-tailor
 ```
 
-## Annotating the master resume
+## Annotating the base resume
 
 Everything lives under `entry.meta.tailor`. Outside that sub-object the resume stays canonical
 JSON Resume.
@@ -31,20 +31,20 @@ interface TailorMeta {
 }
 ```
 
-- **`tags`** — an entry with no tags never appears in any variant's output; it's an internal
-  reference in the master resume. Otherwise, the entry is included whenever the active variant's
+- **`tags`**: an entry with no tags never appears in any variant's output; it's an internal
+  reference in the base resume. Otherwise, the entry is included whenever the active variant's
   tags intersect this list.
-- **`highlightTags`** — optional, only meaningful on entries with a `highlights` array. If
+- **`highlightTags`**: optional, only meaningful on entries with a `highlights` array. If
   omitted, all highlights are emitted (mixed-role entries are the only ones that need this map).
   The `"*"` key is universal: those indices are emitted for every variant.
-- **`keywordTags`** — same shape and semantics as `highlightTags` (including the universal `"*"`
+- **`keywordTags`**: same shape and semantics as `highlightTags` (including the universal `"*"`
   key), applied to `keywords` instead of `highlights`. Lets one mixed-stack `skills` or `projects`
   entry (e.g. a single "Backend" skill covering both Node.js and PHP keywords) show only the
   keywords relevant to the active variant, instead of having to split it into separate entries.
-- **`courseTags`** — same shape and semantics, applied to `courses` on `education` entries. Lets
+- **`courseTags`**: same shape and semantics, applied to `courses` on `education` entries. Lets
   one education entry show only the courses relevant to the active variant (e.g. CS courses for a
   dev role, statistics courses for a data science role).
-- **`labelPerTag`** — optional override of the entry's label field per active tag
+- **`labelPerTag`**: optional override of the entry's label field per active tag
   (`skills → name`, `work → position`, `projects → name`). Silently ignored elsewhere.
 
 **Single-role entry:**
@@ -175,16 +175,16 @@ interface Variant {
 }
 ```
 
-An entry is included whenever its `tags` intersect `[variant.tag, ...variant.also]` — e.g. the
-`backend` variant above also picks up every entry tagged `short`, cascading a condensed base set
-into role-specific variants (see `also`).
+An entry is included whenever its `tags` intersect `[variant.tag, ...variant.also]`. For example,
+the `backend` variant above also picks up every entry tagged `short`, cascading a condensed base
+set into role-specific variants (see `also`).
 
 ## CLI
 
 The bin is installed as both `jsonresume-tailor` and the shorter alias `jrt`.
 
 ```bash
-# Filter the master resume through the "backend" variant and write the result
+# Filter the base resume through the "backend" variant and write the result
 npx jrt build backend --resume resume.en.json --out resume.backend.en.json
 
 # Preview without writing (prints the same summary to stdout)
@@ -196,10 +196,10 @@ npx jrt build backend --resume resume.en.json --out resume.backend.en.json --qui
 # Show which entries survived per section (with their taggable field counts)
 npx jrt build backend --resume resume.en.json --out resume.backend.en.json --verbose
 
-# Batch build: every variant in a directory, through one master, in one command
+# Batch build: every variant in a directory, through one base resume, in one command
 npx jrt build --resume resume.en.json --variants-dir variants/ --out-dir dist/
 
-# Inspect indexed taggable fields and tag maps — handy for writing highlightTags/keywordTags/courseTags
+# Inspect indexed taggable fields and tag maps: handy for writing highlightTags/keywordTags/courseTags
 npx jrt inspect --resume resume.en.json
 npx jrt inspect --resume resume.en.json --section work
 npx jrt inspect --resume resume.en.json --format json
@@ -225,9 +225,9 @@ With `--verbose`, each surviving entry is listed underneath its section along wi
 each taggable field (`highlights`/`keywords`/`courses`) it kept.
 
 Batch build (`--variants-dir`, no positional `<variant>`) runs every `*.json` variant in that
-directory through the same master resume in one command, writing `<variant>.json` into
-`--out-dir` — or `<variant>.<locale>.json` when the master's own filename encodes a locale (e.g.
-`resume.en.json` → `backend.en.json`), the same convention `jsonresume-parity` uses.
+directory through the same base resume in one command, writing `<variant>.json` into
+`--out-dir` (or `<variant>.<locale>.json` when the base resume's own filename encodes a locale,
+e.g. `resume.en.json` → `backend.en.json`), the same convention `jsonresume-parity` uses.
 
 Exit codes: `0` success · `1` validation error (invalid variant/resume, or an out-of-range
 `highlightTags`/`keywordTags`/`courseTags` index in `check`) · `2` usage error (bad arguments,
@@ -239,19 +239,19 @@ file not found).
 import { tailor, loadVariant, checkTailor } from 'jsonresume-tailor'
 
 const variant = await loadVariant('variants/backend.json')
-const { resume, summary } = tailor(masterResume, variant, {
+const { resume, summary } = tailor(baseResume, variant, {
   quiet: false,
   onWarning: (message) => console.warn(message)
 })
-// resume: filtered, canonical JSON Resume — no meta.tailor left
+// resume: filtered, canonical JSON Resume, with no meta.tailor left
 // summary: { sections: { work: { before, after, arrayStats? }, ... }, warnings }
 
-// Cross-check the master resume's annotations against a set of variants
-const result = checkTailor(masterResume, [variant])
+// Cross-check the base resume's annotations against a set of variants
+const result = checkTailor(baseResume, [variant])
 // result: { errors: Finding[], warnings: Finding[] }
 ```
 
-`tailor()` never mutates its input — it returns a filtered deep copy plus a summary of what
+`tailor()` never mutates its input. It returns a filtered deep copy plus a summary of what
 changed.
 
 ## `check` rules and defaults
@@ -267,7 +267,7 @@ changed.
 | `tailorUnusedVariant`   | warn    | A variant matches no entry in the resume                              |
 | `tailorEmptySection`    | warn    | A section is empty after filtering and isn't in `sections.drop`       |
 
-These checks are self-contained to `jsonresume-tailor` — installing it does not pull in
+These checks are self-contained to `jsonresume-tailor`. Installing it does not pull in
 `jsonresume-lint`, and `jsonresume-lint` has no knowledge of `meta.tailor`.
 
 ## License

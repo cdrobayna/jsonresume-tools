@@ -64,15 +64,15 @@ await lint({ data: resumeObject, rules: { ... } })
 | `schema`      | off     | Validates against the official JSON Resume schema (opt-in) |
 
 `schema` defaults to `off` because the official schema restricts several objects to known
-properties — documents with custom extension fields (e.g. a non-standard `meta.language`) can
+properties: documents with custom extension fields (e.g. a non-standard `meta.language`) can
 otherwise fail even when they're perfectly valid for your own purposes. Turn it on explicitly
 if you don't extend the schema.
 
 ## Config discovery
 
-`jrl` reads its config from the `lint` section of a shared `.jsonresumetoolsrc` file — the same
-file `jrp` (jsonresume-parity) and `jrx` (jsonresume-execute) read their own sections from, so one
-file covers every tool you use:
+`jrl` reads its config from the `lint` section of a shared `.jsonresumetoolsrc` file. `jrp`
+(jsonresume-parity) and `jrx` (jsonresume-execute) read their own sections from the same file,
+so one file covers every tool you use:
 
 ```json
 // .jsonresumetoolsrc.json

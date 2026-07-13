@@ -43,7 +43,7 @@ const PACKAGES = [
     dir: 'tailor',
     slug: 'tailor',
     title: 'jsonresume-tailor (jrt)',
-    description: 'Generate role-tailored variants of a JSON Resume from one annotated master.'
+    description: 'Generate role-tailored variants of a JSON Resume from one annotated base resume.'
   },
   {
     dir: 'execute',
