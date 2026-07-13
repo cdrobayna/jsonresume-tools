@@ -196,7 +196,7 @@ jrx check --out-dir dist
 [PASS] tailor check (en)
 [PASS] tailor check (es)
 [SKIP] audit
-    no --theme given — skipped (pass --theme to run the ATS audit)
+    no theme resolved — skipped (pass --theme, or set one in a .jsonresumetoolsrc file's "execute" section, to run the ATS audit)
 
 5 step(s) passed.
 ```
