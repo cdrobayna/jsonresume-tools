@@ -1,5 +1,43 @@
 # jsonresume-execute
 
+## 0.2.0
+
+### Minor Changes
+
+- 0ab42ad: `jrx check`/`jrx all` can read a default `--theme` from a `.jsonresumetoolsrc` config file (or a
+  `"jsonresumetools"` key in `package.json`), under an `"execute"` section:
+
+  ```json
+  {
+    "execute": { "theme": "operations-precision" }
+  }
+  ```
+
+  This is the same shared config file `jrl`/`jrp` read their own settings from (see
+  `docs/reference/config.md`) — `execute` is just one section of it. Pass `-c <path>` for an
+  explicit file, or keep passing `--theme` per invocation — the flag always wins over the config
+  file. `theme` is still the only setting `jrx` reads from a config file; everything else stays
+  CLI-flags-only.
+
+### Patch Changes
+
+- 6543186: `jrx check --theme`'s ATS audit score is now always visible in the report. `resume audit` exits 0
+  unless it crashes — the score itself was never a pass/fail gate — so the `ATS score: NN/100 (grade
+X, band)` line resume-cli prints was previously only shown when a step failed or `--verbose` was
+  passed, meaning it was silently hidden on every normal passing run. Each `audit (<file>)` step's
+  status line now always appends a short summary, e.g.:
+
+      [PASS] audit (resume.en.json) — 88/100 (grade B, excellent), 9/10 checks passed
+
+  This is purely a visibility fix: audit's pass/fail semantics are unchanged (still "ran without
+  crashing", not score-gated — a `--min-score` gate is separately scoped future work). Adds an
+  optional, additive `StepResult.summary` field to the programmatic report API (`aggregate`/
+  `formatReport`); existing callers are unaffected.
+
+  Known limitation: `jrx all` still nests `check`'s fully-formatted output inside one coarse "check"
+  step, so this score summary doesn't yet surface under a non-verbose `jrx all` run — tracked
+  separately.
+
 ## 0.1.1
 
 ### Patch Changes
