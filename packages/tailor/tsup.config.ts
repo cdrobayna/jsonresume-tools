@@ -9,5 +9,6 @@ export default defineConfig({
   clean: true,
   dts: { resolve: true },
   noExternal: ['@jsonresume-tools/core'],
+  // cosmiconfig comes in via the bundled core (config.ts), not direct use here — see AGENTS.md
   external: ['typescript', 'cosmiconfig']
 })

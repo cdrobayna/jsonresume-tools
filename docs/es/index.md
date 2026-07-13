@@ -4,7 +4,7 @@ layout: home
 hero:
   name: jsonresume-tools
   text: Herramientas independientes para JSON Resume
-  tagline: Mantén un currículum en paridad entre idiomas, personalízalo por rol desde un único master, y orquesta todo — incluyendo el propio resume-cli — con una sola CLI.
+  tagline: Tu currículum se mantiene sincronizado entre idiomas, se adapta a cada rol y se valida solo. Todo con una sola CLI.
   actions:
     - theme: brand
       text: Ver el flujo completo
@@ -14,38 +14,39 @@ hero:
       link: https://github.com/cdrobayna/jsonresume-tools
 
 features:
-  - title: Parity
-    details: El vacío que ningún otro proyecto del ecosistema JSON Resume cubre — paridad estructural y de contenido entre variantes de idioma de un currículum, para que resume.en.json y resume.es.json nunca se desincronicen en silencio.
+  - title: En sintonía
+    details: Compara tu currículum en cada idioma y avisa si una sección quedó desactualizada o sin traducir, antes de que lo notes.
     link: /es/reference/parity
-  - title: Tailor
-    details: Genera variantes de currículum por rol (backend, platform, ...) desde un único master anotado — se acabaron las copias resume.backend.json mantenidas a mano.
+  - title: A medida
+    details: Etiqueta cada entrada una sola vez y genera tantas variantes por rol como necesites, sin mantener copias a mano.
     link: /es/reference/tailor
-  - title: Lint
-    details: Chequeos de calidad por archivo — fechas, URLs, cronología, placeholders sin borrar. Útil en cualquier JSON Resume individual.
+  - title: Sin errores
+    details: "Chequeos de calidad por archivo: fechas, URLs, cronologías y placeholders. Útil en cualquier JSON Resume individual."
     link: /es/reference/lint
-  - title: Execute
-    details: La CLI unificada que orquesta las tres herramientas anteriores — arma la matriz completa de rol x idioma, la valida, y maneja resume-cli por ti (lo detecta, te dice qué falta, exporta a PDF/HTML) en un solo comando.
+  - title: Todo en uno
+    details: Un solo comando te lleva del currículum anotado al PDF listo para enviar, validado y exportado con resume-cli.
     link: /es/reference/execute
 ---
 
 ## ¿Qué es JSON Resume?
 
-[JSON Resume](https://jsonresume.org) es un schema abierto y comunitario para representar un
-currículum como un único archivo JSON en vez de un formato de documento propietario. Una vez que
+[JSON Resume](https://jsonresume.org) es un schema abierto, mantenido por la comunidad, para representar un
+currículum como un único archivo JSON en lugar de un formato de documento propietario. Una vez que
 un currículum tiene la forma de JSON Resume, cualquier herramienta compatible puede leerlo: los
 temas oficiales lo renderizan a HTML/PDF, y
 [`resume-cli`](https://github.com/jsonresume/jsonresume.org) (la CLI oficial) lo valida, exporta y
 sirve de fábrica.
 
-Las cuatro herramientas de este sitio se conectan por encima, para los flujos que las
-herramientas oficiales no cubren: mantener un currículum sincronizado entre idiomas,
-personalizarlo por rol desde un único master, y orquestar todo eso — más `resume-cli` — a medida
-que crece el número de masters y variantes.
+Las cuatro herramientas de este sitio se conectan entre sí para cubrir los flujos que las
+herramientas oficiales no resuelven: mantener un currículum sincronizado entre idiomas,
+personalizarlo por rol desde una sola fuente, y orquestar todo eso, incluido `resume-cli`, a
+medida que crece el número de currículums base y variantes.
 
 ¿Todavía no tienes un JSON Resume? Consulta la
 [referencia del schema](https://jsonresume.org/schema.json) para escribir uno a mano, o ve
 directo a [primeros pasos](/es/guide/getting-started).
 
+<!--
 ## Míralo en acción
 
 Una entrada, anotada una sola vez en el master:
@@ -83,13 +84,25 @@ Cada otra sección (`work`, `skills`, `education`, ...) recibe el mismo filtrado
 `jsonresume-parity` chequea que todo esto se mantenga sincronizado con la traducción al inglés en
 todo momento. Nada de lo anterior es un mockup — es output real de `docs/examples/` en este repo.
 Consulta el [tutorial de flujo completo](/es/guide/full-workflow) para ejecutarlo tú mismo.
+-->
 
-## Origen
+## Por qué existe
 
-Esta colección empezó como un validador de propósito único mantenido en un repo personal de CV
-bilingüe (EN/ES). Ninguna herramienta existente en el ecosistema JSON Resume (resumed,
-hackmyresume, resume-cli, rendercv) chequea paridad multi-idioma — `jsonresume-parity` llena ese
-vacío. `jsonresume-lint` separó los chequeos por archivo que no dependen de comparar dos idiomas.
-`jsonresume-tailor` generaliza un script ad hoc de ese mismo repo de CV en una herramienta
-reutilizable para generar variantes de currículum por rol. `jsonresume-execute` une las tres para
-los flujos que necesitan más de una a la vez.
+Si alguna vez mantuviste un currículum en más de un idioma, o lo adaptaste para más de una
+búsqueda laboral, seguramente reconoces el problema: cada copia extra es una oportunidad más de
+que algo quede desactualizado, mal traducido, o simplemente roto.
+
+Empecé a resolver esto con un script personal, después de ver que ningún proyecto del ecosistema
+JSON Resume (resumed, hackmyresume, resume-cli, rendercv) lo cubría. Con el tiempo lo generalicé
+en las cuatro herramientas de este repo.
+
+Antes, mi flujo era manual de punta a punta: actualizaba el currículum en inglés, después
+replicaba el cambio a mano en el de español, cuando me acordaba. Si estaba postulando a un rol de
+backend y a otro de platform, mantenía copias separadas con distintos highlights, y corregía cada
+una por su cuenta. Antes de exportar, repasaba fechas, URLs y placeholders a simple vista, y
+corría cada paso en el orden correcto, cada vez.
+
+Hoy ese mismo flujo cabe en un solo comando: anoto cada entrada una vez, con las etiquetas de
+idioma y rol que necesito, y el resto se arma solo. No resuelve nada que no pudiera hacer a mano,
+simplemente automatiza lo que ya hacía. Decidí publicarlo como código abierto por si le ahorra ese
+mismo trabajo a alguien más manteniendo un currículum bilingüe o adaptado a distintos roles.
