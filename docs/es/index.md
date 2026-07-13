@@ -34,7 +34,7 @@ features:
 currículum como un único archivo JSON en lugar de un formato de documento propietario. Una vez que
 un currículum tiene la forma de JSON Resume, cualquier herramienta compatible puede leerlo: los
 temas oficiales lo renderizan a HTML/PDF, y
-[`resume-cli`](https://github.com/jsonresume/jsonresume.org) (la CLI oficial) lo valida, exporta y
+[`resume-cli`](https://github.com/jsonresume/jsonresume.org/tree/master/packages/cli) (la CLI oficial) lo valida, exporta y
 sirve de fábrica.
 
 Las cuatro herramientas de este sitio se conectan entre sí para cubrir los flujos que las
@@ -43,7 +43,7 @@ personalizarlo por rol desde una sola fuente, y orquestar todo eso, incluido `re
 medida que crece el número de currículums base y variantes.
 
 ¿Todavía no tienes un JSON Resume? Consulta la
-[referencia del schema](https://jsonresume.org/schema.json) para escribir uno a mano, o ve
+[referencia del schema](https://jsonresume.org/schema) para escribir uno a mano, o ve
 directo a [primeros pasos](/es/guide/getting-started).
 
 <!--

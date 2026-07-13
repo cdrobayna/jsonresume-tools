@@ -4,7 +4,7 @@
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](../../LICENSE)
 
 `jrx` is a unified CLI that orchestrates [`jsonresume-lint`](../lint), [`jsonresume-parity`](../parity),
-[`jsonresume-tailor`](../tailor), and [`resume-cli`](https://github.com/jsonresume/jsonresume.org)
+[`jsonresume-tailor`](../tailor), and [`resume-cli`](https://github.com/jsonresume/jsonresume.org/tree/master/packages/cli)
 across languages and role variants, for workflows that need more than one of them at a time (e.g.
 tailoring a resume in more than one language, which otherwise means one `jsonresume-tailor build`
 per language by hand).

@@ -33,7 +33,7 @@ features:
 [JSON Resume](https://jsonresume.org) is an open-source, community schema for representing a
 resume as a single JSON file instead of a proprietary document format. Once a resume is
 JSON Resume-shaped, any compatible tool can read it: official themes render it to HTML/PDF, and
-[`resume-cli`](https://github.com/jsonresume/jsonresume.org) (the official CLI) validates, exports,
+[`resume-cli`](https://github.com/jsonresume/jsonresume.org/tree/master/packages/cli) (the official CLI) validates, exports,
 and serves it out of the box.
 
 The four tools on this site connect with each other to cover the workflows the official tooling
@@ -41,7 +41,7 @@ doesn't solve: keeping a resume synced across languages, tailoring it per role f
 source, and orchestrating all of that, including `resume-cli`, as the number of base resumes and
 variants grows.
 
-Don't have a JSON Resume yet? See the [schema reference](https://jsonresume.org/schema.json) to
+Don't have a JSON Resume yet? See the [schema reference](https://jsonresume.org/schema) to
 write one by hand, or jump straight to [getting started](/guide/getting-started).
 
 <!--
