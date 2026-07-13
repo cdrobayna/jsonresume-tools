@@ -5,6 +5,7 @@ import { aggregate, formatReport, type StepResult } from '../report.js'
 import { requireTool } from '../resolve.js'
 import { spawnGate } from '../spawn.js'
 import type { SpawnFn } from '../spawn.js'
+import { resolveTheme } from '../theme.js'
 
 export interface RunCheckDeps {
   spawn?: SpawnFn
@@ -56,15 +57,16 @@ function extractAuditSummary(stdout: string): string | undefined {
 export async function runCheck(argv: string[], deps: RunCheckDeps = {}): Promise<CommandResult> {
   const { flags, booleans } = parseFlags(
     argv,
-    ['masters', 'lang', 'variants-dir', 'out-dir', 'theme'],
+    ['masters', 'lang', 'variants-dir', 'out-dir', 'theme', 'config'],
     ['verbose'],
-    { v: 'verbose' }
+    { v: 'verbose', c: 'config' }
   )
   const cwd = deps.cwd ?? process.cwd()
   const spawn = deps.spawn ?? spawnGate
   const verbose = booleans.has('verbose')
   const overrides = flags['variants-dir'] ? flags['variants-dir'].split(',') : []
   const outDir = flags['out-dir'] ?? 'dist'
+  const theme = await resolveTheme(flags, cwd)
 
   const masters = await resolveMasters(flags, cwd)
   if (masters.length === 0) {
@@ -114,7 +116,7 @@ export async function runCheck(argv: string[], deps: RunCheckDeps = {}): Promise
     })
   }
 
-  if (flags.theme) {
+  if (theme) {
     const resumeTool = requireTool('resume', { cwd })
     // No hard gate here: when chromiumEnv() finds nothing, we pass process.env through
     // unmodified and let resume-cli's own Puppeteer resolve its bundled/downloaded Chrome,
@@ -122,7 +124,7 @@ export async function runCheck(argv: string[], deps: RunCheckDeps = {}): Promise
     const chromiumOverride = chromiumEnv()
     const auditTargets = [...masters.map((m) => m.path), ...matrixFiles]
     for (const file of auditTargets) {
-      const result = await spawn(resumeTool.execPath, ['audit', file, '--theme', flags.theme], {
+      const result = await spawn(resumeTool.execPath, ['audit', file, '--theme', theme], {
         cwd,
         env: { ...process.env, ...chromiumOverride }
       })
@@ -136,7 +138,13 @@ export async function runCheck(argv: string[], deps: RunCheckDeps = {}): Promise
       })
     }
   } else {
-    steps.push({ label: 'audit', tool: 'resume', code: 0, skipped: true, stdout: 'no --theme given — skipped (pass --theme to run the ATS audit)' })
+    steps.push({
+      label: 'audit',
+      tool: 'resume',
+      code: 0,
+      skipped: true,
+      stdout: 'no theme resolved — skipped (pass --theme, or set one in a jsonresumeexecute config file, to run the ATS audit)'
+    })
   }
 
   const report = aggregate(steps)

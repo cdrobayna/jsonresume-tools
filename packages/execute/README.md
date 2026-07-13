@@ -64,7 +64,7 @@ jrx run resume -- validate --resume resume.en.json
 Exit codes follow the same convention every jsonresume-tools CLI uses: `0` clean, `1`
 findings/validation failure, `2` misuse (including a missing required tool). `jrx check`/`all`
 aggregate multiple tools' exit codes — the overall code is the worst among the steps that ran
-(skipped steps, like `audit` with no `--theme`, don't count).
+(skipped steps, like `audit` with no theme resolved, don't count).
 
 `resume-cli`'s ATS audit is advisory only — it exits `0` on any successful run, regardless of
 score — so `jrx check`'s `audit` step always shows its ATS score right on the status line, not
@@ -77,6 +77,23 @@ just when `--verbose` is passed or the step fails:
 This is visibility only: the score never affects `audit`'s pass/fail status or `jrx`'s exit
 code — only a theme that fails to resolve or a render/validator crash does. Pass `--verbose` for
 the full per-check breakdown and recommendations resume-cli prints.
+
+## Config discovery
+
+`jrx check`/`jrx all` can read a default `--theme` from a config file, so you don't have to pass
+it on every invocation. Resolved via [cosmiconfig](https://github.com/cosmiconfig/cosmiconfig),
+the same way `jsonresume-lint`/`jsonresume-parity` resolve theirs: `-c <path>` for an explicit
+file, otherwise auto-discovered from `.jsonresumeexecuterc(.json|.yaml|...)`,
+`jsonresumeexecute.config.(js|ts|cjs|mjs)`, or a `"jsonresumeexecute"` key in `package.json`. An
+explicit `--theme` flag always wins over the config file. `theme` is the only setting `jrx` reads
+from a config file — everything else stays CLI-flags-only.
+
+```json
+// .jsonresumeexecuterc.json
+{
+  "theme": "operations-precision"
+}
+```
 
 ## Why not bundle the tools?
 

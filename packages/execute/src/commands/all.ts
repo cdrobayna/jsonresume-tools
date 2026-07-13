@@ -6,6 +6,7 @@ import { aggregate, formatReport, type StepResult } from '../report.js'
 import { requireTool } from '../resolve.js'
 import { spawnGate } from '../spawn.js'
 import type { SpawnFn } from '../spawn.js'
+import { resolveTheme } from '../theme.js'
 import { runBuild } from './build.js'
 import { runCheck } from './check.js'
 
@@ -26,9 +27,9 @@ export interface RunAllDeps {
 export async function runAll(argv: string[], deps: RunAllDeps = {}): Promise<CommandResult> {
   const { flags, booleans } = parseFlags(
     argv,
-    ['masters', 'lang', 'variants-dir', 'out-dir', 'theme', 'format'],
+    ['masters', 'lang', 'variants-dir', 'out-dir', 'theme', 'format', 'config'],
     ['verbose', 'dry-run', 'quiet'],
-    { v: 'verbose', n: 'dry-run', q: 'quiet' }
+    { v: 'verbose', n: 'dry-run', q: 'quiet', c: 'config' }
   )
   const cwd = deps.cwd ?? process.cwd()
   const spawn = deps.spawn ?? spawnGate
@@ -36,6 +37,7 @@ export async function runAll(argv: string[], deps: RunAllDeps = {}): Promise<Com
   const dryRun = booleans.has('dry-run')
   const outDir = flags['out-dir'] ?? 'dist'
   const exportFormat = flags.format ?? 'pdf'
+  const theme = await resolveTheme(flags, cwd)
 
   const commonArgs: string[] = ['--out-dir', outDir]
   if (flags.masters) commonArgs.push('--masters', flags.masters)
@@ -49,7 +51,7 @@ export async function runAll(argv: string[], deps: RunAllDeps = {}): Promise<Com
 
   const checkArgs = [...commonArgs]
   if (verbose) checkArgs.push('--verbose')
-  if (flags.theme) checkArgs.push('--theme', flags.theme)
+  if (theme) checkArgs.push('--theme', theme)
 
   const buildResult = await runBuild(buildArgs, deps)
   const checkResult = await runCheck(checkArgs, deps)
@@ -66,8 +68,14 @@ export async function runAll(argv: string[], deps: RunAllDeps = {}): Promise<Com
     { label: 'check', tool: 'multi', code: checkResult.code, stdout: checkResult.stdout, stderr: checkResult.stderr }
   ]
 
-  if (!flags.theme) {
-    steps.push({ label: 'export', tool: 'resume', code: 0, skipped: true, stdout: 'no --theme given — skipped (pass --theme to export PDFs/HTML)' })
+  if (!theme) {
+    steps.push({
+      label: 'export',
+      tool: 'resume',
+      code: 0,
+      skipped: true,
+      stdout: 'no theme resolved — skipped (pass --theme, or set one in a jsonresumeexecute config file, to export PDFs/HTML)'
+    })
   } else {
     const resumeTool = requireTool('resume', { cwd })
     // No hard gate here: when chromiumEnv() finds nothing, we pass process.env through
@@ -91,7 +99,7 @@ export async function runAll(argv: string[], deps: RunAllDeps = {}): Promise<Com
         continue
       }
       const outPath = path.join(outDir, `cv.${target.slug}.${exportFormat}`)
-      const result = await spawn(resumeTool.execPath, ['export', outPath, '--theme', flags.theme, '--resume', target.path], {
+      const result = await spawn(resumeTool.execPath, ['export', outPath, '--theme', theme, '--resume', target.path], {
         cwd,
         env: { ...process.env, ...chromiumOverride }
       })
