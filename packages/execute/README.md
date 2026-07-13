@@ -80,20 +80,24 @@ the full per-check breakdown and recommendations resume-cli prints.
 
 ## Config discovery
 
-`jrx check`/`jrx all` can read a default `--theme` from a config file, so you don't have to pass
-it on every invocation. Resolved via [cosmiconfig](https://github.com/cosmiconfig/cosmiconfig),
-the same way `jsonresume-lint`/`jsonresume-parity` resolve theirs: `-c <path>` for an explicit
-file, otherwise auto-discovered from `.jsonresumeexecuterc(.json|.yaml|...)`,
-`jsonresumeexecute.config.(js|ts|cjs|mjs)`, or a `"jsonresumeexecute"` key in `package.json`. An
-explicit `--theme` flag always wins over the config file. `theme` is the only setting `jrx` reads
-from a config file — everything else stays CLI-flags-only.
+`jrx check`/`jrx all` can read a default `--theme` from the `execute` section of a shared
+`.jsonresumetoolsrc` file, so you don't have to pass it on every invocation — the same file
+`jsonresume-lint`/`jsonresume-parity` read their own sections from:
 
 ```json
-// .jsonresumeexecuterc.json
+// .jsonresumetoolsrc.json
 {
-  "theme": "operations-precision"
+  "execute": {
+    "theme": "operations-precision"
+  }
 }
 ```
+
+Resolved via [cosmiconfig](https://github.com/cosmiconfig/cosmiconfig): `-c <path>` for an
+explicit file, otherwise auto-discovered from `.jsonresumetoolsrc(.json|.yaml|...)`,
+`jsonresumetools.config.(js|ts|cjs|mjs)`, or a `"jsonresumetools"` key in `package.json`. An
+explicit `--theme` flag always wins over the config file. `theme` is the only setting `jrx` reads
+from a config file — everything else stays CLI-flags-only.
 
 ## Why not bundle the tools?
 

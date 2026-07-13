@@ -143,7 +143,7 @@ export async function runCheck(argv: string[], deps: RunCheckDeps = {}): Promise
       tool: 'resume',
       code: 0,
       skipped: true,
-      stdout: 'no theme resolved — skipped (pass --theme, or set one in a jsonresumeexecute config file, to run the ATS audit)'
+      stdout: "no theme resolved — skipped (pass --theme, or set one in a .jsonresumetoolsrc file's \"execute\" section, to run the ATS audit)"
     })
   }
 

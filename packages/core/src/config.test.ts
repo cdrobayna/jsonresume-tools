@@ -77,4 +77,98 @@ describe('loadConfig', () => {
       })
     ).rejects.toThrow()
   })
+
+  describe('section', () => {
+    it('extracts the named section, ignoring sibling sections', async () => {
+      const dir = await makeTempDir()
+      await writeFile(
+        path.join(dir, '.jsonresumetoolstestnoncerc.json'),
+        JSON.stringify({ lint: { rules: { foo: 'off' } }, parity: { rules: { bar: 'x' } } })
+      )
+
+      const config = await loadConfig({
+        moduleName: 'jsonresumetoolstestnonce',
+        section: 'lint',
+        searchFrom: dir,
+        defaults: { rules: { foo: 'error', baz: 'warn' } }
+      })
+
+      expect(config).toEqual({ rules: { foo: 'off', baz: 'warn' } })
+    })
+
+    it('falls back entirely to defaults when the section is absent', async () => {
+      const dir = await makeTempDir()
+      await writeFile(path.join(dir, '.jsonresumetoolstestnoncerc.json'), JSON.stringify({ parity: { rules: { bar: 'x' } } }))
+
+      const defaults = { rules: { foo: 'error' } }
+      const config = await loadConfig({
+        moduleName: 'jsonresumetoolstestnonce',
+        section: 'lint',
+        searchFrom: dir,
+        defaults
+      })
+
+      expect(config).toEqual(defaults)
+    })
+
+    it('treats a present-but-empty section the same as an absent one', async () => {
+      const dir = await makeTempDir()
+      await writeFile(path.join(dir, '.jsonresumetoolstestnoncerc.json'), JSON.stringify({ lint: {} }))
+
+      const defaults = { rules: { foo: 'error' } }
+      const config = await loadConfig({
+        moduleName: 'jsonresumetoolstestnonce',
+        section: 'lint',
+        searchFrom: dir,
+        defaults
+      })
+
+      expect(config).toEqual(defaults)
+    })
+
+    it('one-level-deep merges inside a section', async () => {
+      const dir = await makeTempDir()
+      await writeFile(path.join(dir, '.jsonresumetoolstestnoncerc.json'), JSON.stringify({ lint: { rules: { foo: 'off' } } }))
+
+      const config = await loadConfig({
+        moduleName: 'jsonresumetoolstestnonce',
+        section: 'lint',
+        searchFrom: dir,
+        defaults: { rules: { foo: 'error', bar: 'warn' }, unrelated: true }
+      })
+
+      expect(config).toEqual({ rules: { foo: 'off', bar: 'warn' }, unrelated: true })
+    })
+
+    it('applies the section to an explicit config path too', async () => {
+      const dir = await makeTempDir()
+      const configPath = path.join(dir, 'custom-name.json')
+      await writeFile(configPath, JSON.stringify({ lint: { rules: { foo: 'off' } } }))
+
+      const config = await loadConfig({
+        moduleName: 'jsonresumetoolstestnonce',
+        section: 'lint',
+        explicitPath: configPath,
+        defaults: { rules: { foo: 'error' } }
+      })
+
+      expect(config).toEqual({ rules: { foo: 'off' } })
+    })
+
+    it('falls back to defaults, without throwing, when an explicit path is missing the section', async () => {
+      const dir = await makeTempDir()
+      const configPath = path.join(dir, 'custom-name.json')
+      await writeFile(configPath, JSON.stringify({ parity: { rules: { bar: 'x' } } }))
+
+      const defaults = { rules: { foo: 'error' } }
+      const config = await loadConfig({
+        moduleName: 'jsonresumetoolstestnonce',
+        section: 'lint',
+        explicitPath: configPath,
+        defaults
+      })
+
+      expect(config).toEqual(defaults)
+    })
+  })
 })

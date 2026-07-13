@@ -1,9 +1,11 @@
 import { cosmiconfig } from 'cosmiconfig'
 
 export interface LoadConfigOptions<T> {
-  /** Base name used to derive config filenames (e.g. `jsonresumeparity` -> `.jsonresumeparityrc`, `jsonresumeparity.config.js`, a `jsonresumeparity` key in package.json). */
+  /** Base name used to derive config filenames (e.g. `jsonresumetools` -> `.jsonresumetoolsrc`, `jsonresumetools.config.js`, a `jsonresumetools` key in package.json). */
   moduleName: string
-  /** Explicit config path (CLI `-c`/`--config`). When set, this file is loaded directly and a missing file is a hard error. */
+  /** Top-level key to extract from the loaded config before merging (e.g. `'lint'` for a shared `{ lint: {...}, parity: {...} }` file). When omitted, the whole loaded object is used. A section that's absent (or an object with no matching key) falls back to `defaults`, same as an empty file. */
+  section?: string
+  /** Explicit config path (CLI `-c`/`--config`). When set, this file is loaded directly and a missing file is a hard error. `section` still applies to it — an explicit file must use the same shape as an auto-discovered one. */
   explicitPath?: string
   /** Directory to start auto-discovery search from when `explicitPath` is not set. Defaults to `process.cwd()`. */
   searchFrom?: string
@@ -11,6 +13,9 @@ export interface LoadConfigOptions<T> {
   /** Override the merge strategy. Defaults to a one-level-deep merge (good enough for `{ rules: {...}, ... }` shaped configs). */
   merge?: (defaults: T, loaded: Partial<T>) => T
 }
+
+/** Shared cosmiconfig moduleName for all `@jsonresume-tools/*` CLIs — one `.jsonresumetoolsrc` file per project, with a top-level section per tool. */
+export const CONFIG_MODULE_NAME = 'jsonresumetools'
 
 function defaultMerge<T extends Record<string, unknown>>(defaults: T, loaded: Partial<T>): T {
   const merged: Record<string, unknown> = { ...defaults }
@@ -35,7 +40,9 @@ function defaultMerge<T extends Record<string, unknown>>(defaults: T, loaded: Pa
  * Loads config via cosmiconfig and merges it over `defaults`. With `explicitPath` set, loads
  * that file directly (missing file throws). Otherwise auto-discovers from `searchFrom`
  * (`.<moduleName>rc`, `<moduleName>.config.{js,mjs,json}`, or a `<moduleName>` key in
- * package.json) and falls back to `defaults` when nothing is found.
+ * package.json) and falls back to `defaults` when nothing is found. When `section` is set, the
+ * named top-level key is extracted from the loaded config before merging — an absent section
+ * falls back to `defaults` just like an empty file would.
  */
 export async function loadConfig<T extends Record<string, unknown>>(options: LoadConfigOptions<T>): Promise<T> {
   const explorer = cosmiconfig(options.moduleName)
@@ -45,6 +52,11 @@ export async function loadConfig<T extends Record<string, unknown>>(options: Loa
 
   if (!result || result.isEmpty) return options.defaults
 
+  const loaded = options.section
+    ? (result.config as Record<string, unknown> | null)?.[options.section]
+    : result.config
+  if (loaded === undefined) return options.defaults
+
   const merge = options.merge ?? defaultMerge
-  return merge(options.defaults, result.config as Partial<T>)
+  return merge(options.defaults, loaded as Partial<T>)
 }

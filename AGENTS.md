@@ -30,7 +30,10 @@ All four published packages bundle `@jsonresume-tools/core` into their output (t
 unfinished config feature; don't remove it expecting the package to still load (it'd break the
 import that survives into its bundle). `jsonresume-lint` and `jsonresume-parity` call `loadConfig`
 for their full rule config; `jsonresume-execute` calls it too, but scoped to a single `theme`
-setting for `jrx check`/`jrx all` — see `docs/reference/config.md`.
+setting for `jrx check`/`jrx all` — see `docs/reference/config.md`. All three read named sections
+(`lint`/`parity`/`execute`) of one shared `.jsonresumetoolsrc` file via core's exported
+`CONFIG_MODULE_NAME` constant and `loadConfig`'s `section` option — don't reintroduce a per-tool
+moduleName/file for a new config-consuming feature.
 
 `jsonresume-execute` is the one package allowed to know the others exist — but only by
 detecting and spawning their CLIs at runtime (`packages/execute/src/resolve.ts`/`spawn.ts`),

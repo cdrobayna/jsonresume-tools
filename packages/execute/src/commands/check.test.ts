@@ -90,11 +90,11 @@ describe('runCheck', () => {
     expect(result.stdout).toContain('[SKIP] audit')
   })
 
-  it('runs the audit step using a theme from a jsonresumeexecute config file when --theme is not given', async () => {
+  it('runs the audit step using a theme from the execute section of a shared .jsonresumetoolsrc file when --theme is not given', async () => {
     const cwd = await fixtureRepo()
     await makeBin(cwd, 'jsonresume-parity')
     await makeBin(cwd, 'resume')
-    await writeFile(path.join(cwd, '.jsonresumeexecuterc.json'), JSON.stringify({ theme: 'from-config' }))
+    await writeFile(path.join(cwd, '.jsonresumetoolsrc.json'), JSON.stringify({ execute: { theme: 'from-config' } }))
 
     const { spawn, calls } = makeSpawnStub()
     const result = await runCheck([], { spawn, cwd })

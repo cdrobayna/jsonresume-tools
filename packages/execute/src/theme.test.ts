@@ -24,14 +24,14 @@ describe('resolveTheme', () => {
 
   it('returns a discovered config file theme', async () => {
     const dir = await makeTempDir()
-    await writeFile(path.join(dir, '.jsonresumeexecuterc.json'), JSON.stringify({ theme: 'even' }))
+    await writeFile(path.join(dir, '.jsonresumetoolsrc.json'), JSON.stringify({ execute: { theme: 'even' } }))
 
     expect(await resolveTheme({}, dir)).toBe('even')
   })
 
   it('the --theme flag wins over a discovered config file', async () => {
     const dir = await makeTempDir()
-    await writeFile(path.join(dir, '.jsonresumeexecuterc.json'), JSON.stringify({ theme: 'even' }))
+    await writeFile(path.join(dir, '.jsonresumetoolsrc.json'), JSON.stringify({ execute: { theme: 'even' } }))
 
     expect(await resolveTheme({ theme: 'elegant' }, dir)).toBe('elegant')
   })
@@ -39,7 +39,7 @@ describe('resolveTheme', () => {
   it('loads an explicit --config path even when --theme is also given', async () => {
     const dir = await makeTempDir()
     const configPath = path.join(dir, 'custom.json')
-    await writeFile(configPath, JSON.stringify({ theme: 'even' }))
+    await writeFile(configPath, JSON.stringify({ execute: { theme: 'even' } }))
 
     expect(await resolveTheme({ theme: 'elegant', config: configPath }, dir)).toBe('elegant')
   })

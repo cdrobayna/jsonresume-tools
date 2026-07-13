@@ -106,9 +106,23 @@ await checkParity({
 
 ## Config discovery
 
+`jrp` reads its config from the `parity` section of a shared `.jsonresumetoolsrc` file — the same
+file `jrl` (jsonresume-lint) and `jrx` (jsonresume-execute) read their own sections from, so one
+file covers every tool you use:
+
+```json
+// .jsonresumetoolsrc.json
+{
+  "parity": {
+    "lengthRatio": { "default": 2.5, "en:ja": 0.7 }
+  }
+}
+```
+
 Resolved via [cosmiconfig](https://github.com/cosmiconfig/cosmiconfig): `-c <path>` for an
-explicit file, otherwise auto-discovered from `.jsonresumeparityrc(.json|.yaml|...)`,
-`jsonresumeparity.config.(js|ts|cjs|mjs)`, or a `"jsonresumeparity"` key in `package.json`.
+explicit file, otherwise auto-discovered from `.jsonresumetoolsrc(.json|.yaml|...)`,
+`jsonresumetools.config.(js|ts|cjs|mjs)`, or a `"jsonresumetools"` key in `package.json`. Omitting
+the `parity` section entirely falls back to `jrp`'s built-in defaults.
 
 ## License
 
