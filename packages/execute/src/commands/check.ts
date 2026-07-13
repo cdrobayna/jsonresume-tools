@@ -20,6 +20,31 @@ async function resolveMasters(flags: Record<string, string>, cwd: string): Promi
   return masters
 }
 
+// Matches resume-cli's `ATS score: NN/100  (grade X, band)` line (its build/audit.js) so `jrx
+// check` can surface a concise score summary unconditionally instead of only on --verbose/
+// failure — audit itself essentially never fails on a low score (it's advisory only). Undefined
+// on anything unexpected (audit crashed before printing, or resume-cli's wording changes) rather
+// than a garbled partial summary.
+const AUDIT_SCORE_RE = /ATS score:\s*(\d+)\/100\s*\(grade\s+([A-F]),\s*([a-z]+)\)/
+const AUDIT_CHECKS_RE = /(\d+)\/(\d+)\s+checks passed/
+
+// Defensive only: spawnGate captures over a non-TTY pipe, so chalk (resume-cli's colorizer)
+// should already auto-disable ANSI codes — this just guards against something like a leaked
+// FORCE_COLOR in the spawned env.
+function stripAnsi(text: string): string {
+  return text.replace(/\x1b\[[0-9;]*m/g, '')
+}
+
+function extractAuditSummary(stdout: string): string | undefined {
+  const plain = stripAnsi(stdout)
+  const scoreMatch = plain.match(AUDIT_SCORE_RE)
+  if (!scoreMatch) return undefined
+  const [, score, grade, compatibility] = scoreMatch
+  const checksMatch = plain.match(AUDIT_CHECKS_RE)
+  const checksSuffix = checksMatch ? `, ${checksMatch[1]}/${checksMatch[2]} checks passed` : ''
+  return `${score}/100 (grade ${grade}, ${compatibility})${checksSuffix}`
+}
+
 /**
  * `jrx check` — the aggregated QA gate. Runs lint, parity, tailor's own `check`, and (if
  * `--theme` is given) resume-cli's ATS `audit`, across every master and the already-built
@@ -101,7 +126,14 @@ export async function runCheck(argv: string[], deps: RunCheckDeps = {}): Promise
         cwd,
         env: { ...process.env, ...chromiumOverride }
       })
-      steps.push({ label: `audit (${file})`, tool: 'resume', code: result.code, stdout: result.stdout, stderr: result.stderr })
+      steps.push({
+        label: `audit (${file})`,
+        tool: 'resume',
+        code: result.code,
+        stdout: result.stdout,
+        stderr: result.stderr,
+        summary: extractAuditSummary(result.stdout)
+      })
     }
   } else {
     steps.push({ label: 'audit', tool: 'resume', code: 0, skipped: true, stdout: 'no --theme given — skipped (pass --theme to run the ATS audit)' })

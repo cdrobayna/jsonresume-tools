@@ -66,6 +66,18 @@ findings/validation failure, `2` misuse (including a missing required tool). `jr
 aggregate multiple tools' exit codes — the overall code is the worst among the steps that ran
 (skipped steps, like `audit` with no `--theme`, don't count).
 
+`resume-cli`'s ATS audit is advisory only — it exits `0` on any successful run, regardless of
+score — so `jrx check`'s `audit` step always shows its ATS score right on the status line, not
+just when `--verbose` is passed or the step fails:
+
+```
+[PASS] audit (resume.en.json) — 88/100 (grade B, excellent), 9/10 checks passed
+```
+
+This is visibility only: the score never affects `audit`'s pass/fail status or `jrx`'s exit
+code — only a theme that fails to resolve or a render/validator crash does. Pass `--verbose` for
+the full per-check breakdown and recommendations resume-cli prints.
+
 ## Why not bundle the tools?
 
 The tools this repo ships (`jsonresume-lint`, `jsonresume-parity`, `jsonresume-tailor`) are

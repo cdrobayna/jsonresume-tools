@@ -56,6 +56,13 @@ export async function runAll(argv: string[], deps: RunAllDeps = {}): Promise<Com
 
   const steps: StepResult[] = [
     { label: 'build', tool: 'tailor', code: buildResult.code, stdout: buildResult.stdout, stderr: buildResult.stderr },
+    // `checkResult.stdout` is `runCheck`'s own already-formatted multi-line report (each of its
+    // sub-steps' `[STATUS] label` lines, including any audit score `summary`) collapsed into one
+    // opaque blob here. That blob is only shown below when THIS "check" step fails or `--verbose`
+    // is passed to `all` — so a per-file audit score summary doesn't surface in a passing,
+    // non-verbose `jrx all` run even though `jrx check` alone would show it. Flattening `check`'s
+    // sub-steps into `all`'s own `steps` (or moving to a structured report format) would fix that,
+    // but is out of scope here — tracked separately.
     { label: 'check', tool: 'multi', code: checkResult.code, stdout: checkResult.stdout, stderr: checkResult.stderr }
   ]
 
