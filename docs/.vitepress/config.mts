@@ -24,7 +24,7 @@ const referenceItemsEs = [
 export default defineConfig({
   title: 'jsonresume-tools',
   description:
-    'A suite of independent tools for JSON Resume: multi-locale parity checks, role-tailored variants, and jrx — a unified CLI orchestrating both (and resume-cli) across languages and roles.',
+    'A suite of independent tools for JSON Resume: multi-locale parity checks, role-tailored variants, per-file quality linting, and jrx, a unified CLI that orchestrates all three (plus resume-cli) across languages and roles.',
   // Pages URL is https://cdrobayna.github.io/jsonresume-tools/
   base: '/jsonresume-tools/',
   cleanUrls: true,
@@ -63,7 +63,7 @@ export default defineConfig({
       link: '/es/',
       title: 'jsonresume-tools',
       description:
-        'Un conjunto de herramientas independientes para JSON Resume: chequeos de paridad multi-idioma, variantes por rol, y jrx — una CLI unificada que orquesta ambas (y resume-cli) entre idiomas y roles.',
+        'Un conjunto de herramientas independientes para JSON Resume: chequeos de paridad multi-idioma, variantes por rol, chequeos de calidad por archivo, y jrx, una CLI unificada que orquesta las tres (más resume-cli) entre idiomas y roles.',
       themeConfig: {
         nav: [
           { text: 'Guía', link: '/es/guide/getting-started' },
