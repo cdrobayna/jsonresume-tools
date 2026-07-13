@@ -7,11 +7,11 @@ hero:
   tagline: Your resume stays synced across languages, adapts to every role, and checks itself. All with one CLI.
   actions:
     - theme: brand
-      text: See the full workflow
-      link: /guide/full-workflow
+      text: Getting started
+      link: /guide/getting-started
     - theme: alt
-      text: View on GitHub
-      link: https://github.com/cdrobayna/jsonresume-tools
+      text: Watch it all work together
+      link: /guide/full-workflow
 
 features:
   - title: In sync

@@ -111,6 +111,16 @@ change here is incomplete if it leaves the demo inconsistent. Coupled surfaces:
 - **Version floors** — the demo's `package.json` `devDependencies` pin `^x.y.z` ranges; a
   published release that the demo's README relies on for documented behavior (e.g. a fix that
   changes observable output) needs its floor bumped there too.
+  - **Never describe unreleased behavior in the demo's README.** Check the target package's
+    actual published version (`npm view <pkg> version`) before trusting a changeset or a local
+    `package.json`/CHANGELOG.md as "current" — a merged, changeset-pending feature on `main` is
+    not yet what `npm install` gives a real reader. The demo's whole premise is "clone this and
+    it really works right now"; showing output from an unpublished version breaks that the
+    moment someone actually follows along. This repo's own `docs/guide/*` tutorials that claim
+    "ran for real" (full-workflow.md) follow the same rule — they describe currently-installable
+    behavior, not `main`. Contrast with `docs/reference/*`: those describe this project's current
+    source state (standard for reference/API docs on the project's own site) and are allowed to
+    document a merged-but-unpublished feature ahead of release.
 - **Cross-links** — links from this repo's docs into the demo repo, and from the demo's README
   back into this repo's docs/reference pages, must stay valid through renames or moves on either
   side.

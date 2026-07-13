@@ -1,8 +1,0 @@
-{
-  "$schema": "https://raw.githubusercontent.com/cdrobayna/jsonresume-tools/main/packages/tailor/tailor-variant.schema.json",
-  "name": "platform",
-  "description": "Platform/infrastructure-focused roles: cloud, CI/CD, and reliability.",
-  "tag": "platform",
-  "also": ["core"],
-  "sections": { "order": ["basics", "skills", "work", "projects", "education", "awards"] }
-}
