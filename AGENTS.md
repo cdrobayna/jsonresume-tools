@@ -90,6 +90,43 @@ CI config, internal refactors, test-only changes) don't need one.
 - Never push to or modify the `changeset-release/main` branch — it's owned by the release
   Action and gets force-regenerated on every push to `main`.
 
+## Companion repo: jsonresume-tools-demo
+
+[cdrobayna/jsonresume-tools-demo](https://github.com/cdrobayna/jsonresume-tools-demo) is a
+public demo repo (marked as a GitHub template repository) that shows a real jsonresume-tools
+setup end to end. Its GitHub name is `jsonresume-tools-demo` — the local clone directory
+(`jsonresume-tools-example`) predates the rename and is stale; don't infer the repo name from the
+local path. It's logically part of this project even though it lives in a separate repo — a
+change here is incomplete if it leaves the demo inconsistent. Coupled surfaces:
+
+- **Example persona/data** — `docs/examples/*.json` here must match the demo's
+  `resume.en.json`/`resume.es.json`/`variants/*` (same persona, same structure). Never let them
+  tell two different example stories.
+- **Tool descriptions & positioning** — the demo README's "What each piece does" section and any
+  tool ranking/ordering convention (see root `README.md`'s "Tools" table) must stay consistent
+  with what's said there.
+- **Version floors** — the demo's `package.json` `devDependencies` pin `^x.y.z` ranges; a
+  published release that the demo's README relies on for documented behavior (e.g. a fix that
+  changes observable output) needs its floor bumped there too.
+- **Cross-links** — links from this repo's docs into the demo repo, and from the demo's README
+  back into this repo's docs/reference pages, must stay valid through renames or moves on either
+  side.
+- **CLI usage/output snippets** — the demo README embeds real transcripts (`jrx doctor`, `jrx
+  check` output). Not all of it carries equal drift risk — distinguish before touching it:
+  - *Volatile, data-defined content* (exact semver numbers, absolute paths) drifts on every
+    npm publish with zero reader value in being exact — elide it (e.g. `(x.y.z)` instead of a
+    real version) rather than hardcoding a snapshot. `jrx doctor`'s version numbers
+    (`packages/execute/src/commands/doctor.ts`) are the clearest example.
+  - *Stable, code-defined content* (step labels, command names — e.g. `jrx check`'s `'lint
+    (masters)'`, `'tailor check (en)'` in `packages/execute/src/commands/check.ts`) only
+    changes on a deliberate source edit. Safe to keep verbatim; a change here is exactly the
+    kind of edit this section exists to catch, and should update the demo in the same pass.
+
+Before finishing any task that touches one of the above: if a local clone of
+`jsonresume-tools-example` is reachable, make the matching edit there too, as its own commit —
+don't bundle it into this repo's PR. If it isn't reachable, don't guess — end your response with
+the exact follow-up edits the user needs to make in that repo.
+
 ## Release pipeline — hard guardrails
 
 `main` is wired to a live release pipeline (`.github/workflows/release.yml`, changesets/action)
