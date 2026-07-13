@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "https://raw.githubusercontent.com/cdrobayna/jsonresume-tools/main/packages/tailor/tailor-variant.schema.json",
+  "$id": "https://cdrobayna.github.io/jsonresume-tools/schemas/tailor-variant.schema.json",
   "title": "jsonresume-tailor variant",
   "description": "Declarative description of a role-tailored resume variant consumed by `jsonresume-tailor build`.",
   "type": "object",

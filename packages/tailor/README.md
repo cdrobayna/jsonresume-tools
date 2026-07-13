@@ -161,7 +161,7 @@ interface Variant {
 
 ```json
 {
-  "$schema": "./tailor-variant.schema.json",
+  "$schema": "https://cdrobayna.github.io/jsonresume-tools/schemas/tailor-variant.schema.json",
   "name": "backend",
   "description": "Backend engineer roles (Node/NestJS-focused)",
   "tag": "backend",

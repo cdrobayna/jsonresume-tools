@@ -18,6 +18,7 @@ docs/es/reference/parity.md
 docs/es/reference/tailor.md
 docs/es/reference/execute.md
 docs/es/reference/config.md
+docs/public/schemas/tailor-variant.schema.json
 
 # OS / editor junk — harmless locally, noise in a public multi-contributor repo
 .DS_Store

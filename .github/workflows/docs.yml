@@ -6,12 +6,14 @@ on:
     paths:
       - 'docs/**'
       - 'packages/*/README.md'
+      - 'packages/tailor/tailor-variant.schema.json'
       - '.github/workflows/docs.yml'
   pull_request:
     branches: [main]
     paths:
       - 'docs/**'
       - 'packages/*/README.md'
+      - 'packages/tailor/tailor-variant.schema.json'
       - '.github/workflows/docs.yml'
 
 # Cancel superseded runs on the same ref (PR updates, or overlapping main pushes racing to deploy).
