@@ -47,6 +47,7 @@ export default defineConfig({
             text: 'Guide',
             items: [
               { text: 'Getting started', link: '/guide/getting-started' },
+              { text: 'Start with an example', link: '/guide/start-with-an-example' },
               { text: 'Which tool do I need?', link: '/guide/which-tool' },
               { text: 'Full workflow', link: '/guide/full-workflow' }
             ]
@@ -74,6 +75,7 @@ export default defineConfig({
             text: 'Guía',
             items: [
               { text: 'Primeros pasos', link: '/es/guide/getting-started' },
+              { text: 'Empieza con un ejemplo', link: '/es/guide/start-with-an-example' },
               { text: '¿Qué herramienta necesito?', link: '/es/guide/which-tool' },
               { text: 'Flujo completo', link: '/es/guide/full-workflow' }
             ]
