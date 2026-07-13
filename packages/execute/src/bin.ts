@@ -35,12 +35,14 @@ check:
   jrx check
     --masters, --lang, --variants-dir, --out-dir   Same as build
     --theme <name>               Run the ATS audit step too (requires resume-cli + Chromium)
+    -c, --config <path>          Explicit config file path (default --theme; see docs)
     -v, --verbose                 Show every step's output, not just failing ones
 
 all:
   jrx all
     --masters, --lang, --variants-dir, --out-dir, --theme, --verbose   Same as build/check
     --format <pdf|html>          Export format when --theme is given (default: pdf)
+    -c, --config <path>          Explicit config file path (default --theme; see docs)
     -n, --dry-run                 Skip the export step's actual rendering
 
 doctor:

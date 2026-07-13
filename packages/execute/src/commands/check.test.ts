@@ -90,6 +90,23 @@ describe('runCheck', () => {
     expect(result.stdout).toContain('[SKIP] audit')
   })
 
+  it('runs the audit step using a theme from a jsonresumeexecute config file when --theme is not given', async () => {
+    const cwd = await fixtureRepo()
+    await makeBin(cwd, 'jsonresume-parity')
+    await makeBin(cwd, 'resume')
+    await writeFile(path.join(cwd, '.jsonresumeexecuterc.json'), JSON.stringify({ theme: 'from-config' }))
+
+    const { spawn, calls } = makeSpawnStub()
+    const result = await runCheck([], { spawn, cwd })
+
+    const auditCalls = calls.filter((c) => c.args[0] === 'audit')
+    expect(auditCalls.length).toBeGreaterThan(0)
+    for (const call of auditCalls) {
+      expect(call.args).toContain('from-config')
+    }
+    expect(result.stdout).not.toContain('[SKIP] audit')
+  })
+
   it('lints the built matrix too when dist/ exists', async () => {
     const cwd = await fixtureRepo()
     await makeBin(cwd, 'jsonresume-parity')
