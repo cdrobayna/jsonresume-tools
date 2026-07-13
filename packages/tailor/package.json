@@ -1,6 +1,6 @@
 {
   "name": "jsonresume-tailor",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Generate role-tailored variants of a JSON Resume from a single annotated base resume.",
   "keywords": [
     "json resume",
