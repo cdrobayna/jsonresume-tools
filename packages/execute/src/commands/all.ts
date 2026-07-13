@@ -74,7 +74,7 @@ export async function runAll(argv: string[], deps: RunAllDeps = {}): Promise<Com
       tool: 'resume',
       code: 0,
       skipped: true,
-      stdout: 'no theme resolved — skipped (pass --theme, or set one in a jsonresumeexecute config file, to export PDFs/HTML)'
+      stdout: "no theme resolved — skipped (pass --theme, or set one in a .jsonresumetoolsrc file's \"execute\" section, to export PDFs/HTML)"
     })
   } else {
     const resumeTool = requireTool('resume', { cwd })

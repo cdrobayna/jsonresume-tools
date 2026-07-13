@@ -58,11 +58,11 @@ describe('runAll', () => {
     expect(calls.some((c) => c.execPath.includes('jsonresume-lint'))).toBe(true)
   })
 
-  it('exports using a theme from a jsonresumeexecute config file when --theme is not given', async () => {
+  it('exports using a theme from the execute section of a shared .jsonresumetoolsrc file when --theme is not given', async () => {
     const cwd = await fixtureRepo()
     await makeBin(cwd, 'resume')
     await makeBin(cwd, 'chromium')
-    await writeFile(path.join(cwd, '.jsonresumeexecuterc.json'), JSON.stringify({ theme: 'from-config' }))
+    await writeFile(path.join(cwd, '.jsonresumetoolsrc.json'), JSON.stringify({ execute: { theme: 'from-config' } }))
     const originalPath = process.env.PATH
     process.env.PATH = `${path.join(cwd, 'node_modules', '.bin')}${path.delimiter}${originalPath ?? ''}`
     try {

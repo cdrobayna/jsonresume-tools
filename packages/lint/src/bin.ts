@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { loadConfig, readOwnVersion, reportJson, reportText, runCli, type Severity } from '@jsonresume-tools/core'
+import { CONFIG_MODULE_NAME, loadConfig, readOwnVersion, reportJson, reportText, runCli, type Severity } from '@jsonresume-tools/core'
 import { defaults, lint } from './index.js'
 
 const HELP = `Usage: jrl [options] <file...>    (alias: jsonresume-lint)
@@ -32,7 +32,8 @@ const exitCode = await runCli(process.argv.slice(2), {
   helpText: HELP,
   async run(args) {
     const config = await loadConfig({
-      moduleName: 'jsonresumelint',
+      moduleName: CONFIG_MODULE_NAME,
+      section: 'lint',
       explicitPath: args.configPath,
       defaults: { rules: defaults.rules }
     })

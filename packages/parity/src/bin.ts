@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { loadConfig, readOwnVersion, report, runCli, type Severity } from '@jsonresume-tools/core'
+import { CONFIG_MODULE_NAME, loadConfig, readOwnVersion, report, runCli, type Severity } from '@jsonresume-tools/core'
 import { resolveLocaleInputs } from './cli-locale.js'
 import { checkParity, defaults } from './index.js'
 
@@ -35,7 +35,8 @@ const exitCode = await runCli(process.argv.slice(2), {
     const locales = resolveLocaleInputs(args.files)
 
     const config = await loadConfig({
-      moduleName: 'jsonresumeparity',
+      moduleName: CONFIG_MODULE_NAME,
+      section: 'parity',
       explicitPath: args.configPath,
       defaults: {
         rules: defaults.rules,
