@@ -134,7 +134,7 @@ Ese warning es esperado, no un error: confirma que la propuesta localizada reemp
 Desde un directorio que contiene ambos currículums base y una carpeta `variants/`:
 
 ```bash
-jrx build --out-dir dist
+npx jrx build --out-dir dist
 ```
 
 ```
@@ -186,7 +186,7 @@ si un directorio tiene más idiomas de los que quieres armar, restringe con `--l
 ## Verificando todo
 
 ```bash
-jrx check --out-dir dist
+npx jrx check --out-dir dist
 ```
 
 ```
@@ -210,7 +210,7 @@ entre los pasos que realmente corrieron.
 ## Opcional: exportar a PDF/HTML
 
 ```bash
-jrx all --theme <tu-tema> --format pdf
+npx jrx all --theme <tu-tema> --format pdf
 ```
 
 corre `build` → `check` → una exportación de `resume-cli` en un solo pipeline, produciendo
@@ -225,4 +225,5 @@ la referencia completa de flags (en inglés).
   (`highlightTags`, `keywordTags`, `courseTags`, `labelPerTag`, `limits`). En inglés.
 - [`/reference/execute`](/es/reference/execute): cada subcomando y flag de `jrx`. En inglés.
 - [`/reference/config`](/es/reference/config): configurando la severidad de reglas de `jrl`/`jrp`
-  vía un archivo de config en vez de flags `--rule`. En inglés.
+  vía un archivo de config en vez de flags `--rule`, y el `--theme` por defecto de `jrx` en ese
+  mismo archivo. En inglés.

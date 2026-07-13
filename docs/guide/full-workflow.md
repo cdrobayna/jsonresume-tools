@@ -134,7 +134,7 @@ That's expected, not an error: it confirms the localized pitch replaced the base
 From a directory containing both base resumes and a `variants/` folder:
 
 ```bash
-jrx build --out-dir dist
+npx jrx build --out-dir dist
 ```
 
 ```
@@ -186,7 +186,7 @@ directory has more languages than you want built, constrain with `--lang en,es`.
 ## Verifying everything
 
 ```bash
-jrx check --out-dir dist
+npx jrx check --out-dir dist
 ```
 
 ```
@@ -209,7 +209,7 @@ pass `--theme <name>`. The overall exit code is the worst among the steps that a
 ## Optional: render to PDF/HTML
 
 ```bash
-jrx all --theme <your-theme> --format pdf
+npx jrx all --theme <your-theme> --format pdf
 ```
 
 runs `build` → `check` → a `resume-cli` export in one pipeline, producing `cv.<slug>.pdf` per
@@ -223,4 +223,4 @@ above. See [`/reference/execute`](/reference/execute) for the full flag referenc
   (`highlightTags`, `keywordTags`, `courseTags`, `labelPerTag`, `limits`).
 - [`/reference/execute`](/reference/execute): every `jrx` subcommand and flag.
 - [`/reference/config`](/reference/config): configuring `jrl`/`jrp` rule severities via a config
-  file instead of `--rule` flags.
+  file instead of `--rule` flags, and setting `jrx`'s default `--theme` in the same file.
