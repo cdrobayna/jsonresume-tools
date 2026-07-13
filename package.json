@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "type": "module",
-  "description": "A suite of independent tools for JSON Resume: multi-locale parity checks, per-file quality linting, role-tailored variants, and jrx, a unified CLI to orchestrate them all.",
+  "description": "A suite of independent tools for JSON Resume: multi-locale parity checks, role-tailored variants, per-file quality linting, and jrx, a unified CLI to orchestrate them all.",
   "engines": {
     "node": ">=22"
   },
