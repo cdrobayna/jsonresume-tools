@@ -1,4 +1,4 @@
-import { CliUsageError, type CommandResult, extractLocale, parseFlags } from '@jsonresume-tools/core'
+import { type CommandResult, extractLocale, parseFlags } from '@jsonresume-tools/core'
 import { chromiumEnv } from '../env.js'
 import { discoverMasters, discoverMatrixFiles, resolveVariantsDir, type MasterFile } from '../matrix.js'
 import { aggregate, formatReport, type StepResult } from '../report.js'
@@ -91,18 +91,15 @@ export async function runCheck(argv: string[], deps: RunCheckDeps = {}): Promise
 
   if (flags.theme) {
     const resumeTool = requireTool('resume', { cwd })
-    const env = chromiumEnv()
-    if (!env) {
-      throw new CliUsageError(
-        "no Chromium/Chrome found for `resume audit` (needed by resume-cli's Puppeteer-based renderer). " +
-          'Install Chromium/Chrome or set PUPPETEER_EXECUTABLE_PATH, or omit --theme to skip the audit step.'
-      )
-    }
+    // No hard gate here: when chromiumEnv() finds nothing, we pass process.env through
+    // unmodified and let resume-cli's own Puppeteer resolve its bundled/downloaded Chrome,
+    // exactly as it does standalone. Only override when a system Chromium was explicitly found.
+    const chromiumOverride = chromiumEnv()
     const auditTargets = [...masters.map((m) => m.path), ...matrixFiles]
     for (const file of auditTargets) {
       const result = await spawn(resumeTool.execPath, ['audit', file, '--theme', flags.theme], {
         cwd,
-        env: { ...process.env, ...env }
+        env: { ...process.env, ...chromiumOverride }
       })
       steps.push({ label: `audit (${file})`, tool: 'resume', code: result.code, stdout: result.stdout, stderr: result.stderr })
     }
