@@ -14,7 +14,7 @@
 // docs/reference/{lint,parity,tailor,execute}.md or docs/es/reference/*.md; edit the source
 // README (or, for config.md, docs/reference/config.md directly) and re-run `pnpm docs:prepare`.
 
-import { readFileSync, writeFileSync, mkdirSync } from 'node:fs'
+import { readFileSync, writeFileSync, mkdirSync, copyFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { dirname, join } from 'node:path'
 
@@ -23,6 +23,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url))
 const repoRoot = join(__dirname, '..', '..', '..')
 const docsReferenceDir = join(repoRoot, 'docs', 'reference')
 const docsEsReferenceDir = join(repoRoot, 'docs', 'es', 'reference')
+const docsPublicSchemasDir = join(repoRoot, 'docs', 'public', 'schemas')
 
 const GITHUB_BLOB = 'https://github.com/cdrobayna/jsonresume-tools/blob/main'
 
@@ -141,3 +142,15 @@ for (const slug of [...PACKAGES.map((pkg) => pkg.slug), 'config']) {
   writeFileSync(outPath, output, 'utf8')
   console.log(`[docs:prepare] wrote docs/es/reference/${slug}.md (EN content, ES chrome)`)
 }
+
+// Mirror tailor-variant.schema.json into docs/public/schemas/ so VitePress publishes it, verbatim,
+// at https://cdrobayna.github.io/jsonresume-tools/schemas/tailor-variant.schema.json — served with
+// a correct `application/json` content-type (unlike raw.githubusercontent.com, which forces
+// text/plain), so editors can resolve it from a variant file's `$schema`. packages/tailor/ stays
+// the single source of truth; this copy is generated and gitignored.
+mkdirSync(docsPublicSchemasDir, { recursive: true })
+copyFileSync(
+  join(repoRoot, 'packages', 'tailor', 'tailor-variant.schema.json'),
+  join(docsPublicSchemasDir, 'tailor-variant.schema.json')
+)
+console.log('[docs:prepare] wrote docs/public/schemas/tailor-variant.schema.json')
