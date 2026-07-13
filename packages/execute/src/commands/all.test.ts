@@ -58,6 +58,28 @@ describe('runAll', () => {
     expect(calls.some((c) => c.execPath.includes('jsonresume-lint'))).toBe(true)
   })
 
+  it('exports using a theme from a jsonresumeexecute config file when --theme is not given', async () => {
+    const cwd = await fixtureRepo()
+    await makeBin(cwd, 'resume')
+    await makeBin(cwd, 'chromium')
+    await writeFile(path.join(cwd, '.jsonresumeexecuterc.json'), JSON.stringify({ theme: 'from-config' }))
+    const originalPath = process.env.PATH
+    process.env.PATH = `${path.join(cwd, 'node_modules', '.bin')}${path.delimiter}${originalPath ?? ''}`
+    try {
+      const { spawn, calls } = makeSpawnStub()
+      const result = await runAll([], { spawn, cwd })
+
+      const exportCalls = calls.filter((c) => c.args[0] === 'export')
+      expect(exportCalls.length).toBeGreaterThan(0)
+      for (const call of exportCalls) {
+        expect(call.args).toContain('from-config')
+      }
+      expect(result.stdout).not.toContain('[SKIP] export')
+    } finally {
+      process.env.PATH = originalPath
+    }
+  })
+
   it('does not forward --theme/--format to build (which does not accept them)', async () => {
     const cwd = await fixtureRepo()
     await makeBin(cwd, 'resume')

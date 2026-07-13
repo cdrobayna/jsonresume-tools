@@ -90,6 +90,23 @@ describe('runCheck', () => {
     expect(result.stdout).toContain('[SKIP] audit')
   })
 
+  it('runs the audit step using a theme from a jsonresumeexecute config file when --theme is not given', async () => {
+    const cwd = await fixtureRepo()
+    await makeBin(cwd, 'jsonresume-parity')
+    await makeBin(cwd, 'resume')
+    await writeFile(path.join(cwd, '.jsonresumeexecuterc.json'), JSON.stringify({ theme: 'from-config' }))
+
+    const { spawn, calls } = makeSpawnStub()
+    const result = await runCheck([], { spawn, cwd })
+
+    const auditCalls = calls.filter((c) => c.args[0] === 'audit')
+    expect(auditCalls.length).toBeGreaterThan(0)
+    for (const call of auditCalls) {
+      expect(call.args).toContain('from-config')
+    }
+    expect(result.stdout).not.toContain('[SKIP] audit')
+  })
+
   it('lints the built matrix too when dist/ exists', async () => {
     const cwd = await fixtureRepo()
     await makeBin(cwd, 'jsonresume-parity')
@@ -177,6 +194,42 @@ describe('runCheck', () => {
     } finally {
       process.env.PATH = originalPath
     }
+  })
+
+  it('surfaces the ATS score inline on the audit status line, even without --verbose', async () => {
+    const cwd = await fixtureRepo()
+    await makeBin(cwd, 'jsonresume-parity')
+    await makeBin(cwd, 'resume')
+    const auditStdout = [
+      '',
+      'ATS score: 88/100  (grade B, excellent)',
+      '9/10 checks passed, 1 need attention',
+      '',
+      'Checks:',
+      '  ✓ Semantic HTML (10/10)',
+      ''
+    ].join('\n')
+    const { spawn } = makeSpawnStub((execPath, args) => (args[0] === 'audit' ? { stdout: auditStdout } : {}))
+    const result = await runCheck(['--theme', 'my-theme'], { spawn, cwd }) // no --verbose
+
+    const auditLine = result.stdout?.split('\n').find((l) => l.includes('audit (') && l.includes('resume.en.json'))
+    expect(auditLine).toContain('— 88/100 (grade B, excellent), 9/10 checks passed')
+    // full raw dump ("Checks:", per-check lines) still stays hidden without --verbose
+    expect(result.stdout).not.toContain('Semantic HTML')
+  })
+
+  it('gracefully omits the summary when audit stdout does not match the expected score format', async () => {
+    const cwd = await fixtureRepo()
+    await makeBin(cwd, 'jsonresume-parity')
+    await makeBin(cwd, 'resume')
+    const { spawn } = makeSpawnStub((execPath, args) =>
+      args[0] === 'audit' ? { code: 1, stdout: '', stderr: 'Error: theme "my-theme" not found' } : {}
+    )
+    const result = await runCheck(['--theme', 'my-theme'], { spawn, cwd })
+
+    const auditLine = result.stdout?.split('\n').find((l) => l.startsWith('[FAIL] audit ('))
+    expect(auditLine).toBeDefined()
+    expect(auditLine).not.toContain(' — ')
   })
 
   it('returns exit 2 with no throw when no masters are found', async () => {
