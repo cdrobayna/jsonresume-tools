@@ -26,19 +26,19 @@ every other file is compared against it.
 
 ```bash
 # Filename convention
-jrp resume.en.json resume.es.json resume.fr.json
+npx jrp resume.en.json resume.es.json resume.fr.json
 
 # Explicit override when the filename doesn't encode the locale
-jrp en=cv-main.json es=cv-espanol.json
+npx jrp en=cv-main.json es=cv-espanol.json
 
 # Config file (auto-discovered via cosmiconfig; -c overrides explicitly)
-jrp -c parity.config.js resume.en.json resume.es.json
+npx jrp -c parity.config.js resume.en.json resume.es.json
 
 # One-off rule severity override
-jrp --rule lengthRatio=off resume.en.json resume.es.json
+npx jrp --rule lengthRatio=off resume.en.json resume.es.json
 
 # Machine-readable output
-jrp --format json resume.en.json resume.es.json
+npx jrp --format json resume.en.json resume.es.json
 ```
 
 Exit codes: `0` clean, `1` errors present, `2` misuse. Warnings alone never fail the run.

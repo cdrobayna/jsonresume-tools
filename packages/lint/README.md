@@ -18,11 +18,11 @@ npm install --save-dev jsonresume-lint
 The bin is installed as both `jsonresume-lint` and the shorter alias `jrl`.
 
 ```bash
-jrl resume.en.json                    # one file
-jrl resume.en.json resume.es.json     # several, reported per file
-jrl --rule schema=error resume.en.json
-jrl -c lint.config.js resume.*.json
-jrl --format json resume.en.json resume.es.json
+npx jrl resume.en.json                    # one file
+npx jrl resume.en.json resume.es.json     # several, reported per file
+npx jrl --rule schema=error resume.en.json
+npx jrl -c lint.config.js resume.*.json
+npx jrl --format json resume.en.json resume.es.json
 ```
 
 Exit codes: `0` clean, `1` errors present, `2` misuse. Warnings alone never fail the run.

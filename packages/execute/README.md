@@ -36,29 +36,29 @@ language with `<lang>=<dir>`.
 
 ```bash
 # Generate the full {role}.{lang}.json matrix from every detected master
-jrx build --out-dir dist
+npx jrx build --out-dir dist
 
 # Run every validator (lint, parity, tailor check) across masters + the built matrix
-jrx check
+npx jrx check
 
 # ...plus resume-cli's ATS audit
-jrx check --theme operations-precision
+npx jrx check --theme operations-precision
 
 # build -> check -> resume-cli PDF/HTML export, one pipeline
-jrx all --theme operations-precision --format pdf
+npx jrx all --theme operations-precision --format pdf
 
 # Show which tools are installed, their versions, and install hints for what's missing
-jrx doctor
+npx jrx doctor
 
 # Print-and-confirm install of the recommended toolchain
-jrx setup
-jrx setup --dry-run    # print the install command without running it
-jrx setup --yes        # skip the confirmation prompt
-jrx setup --global     # install globally (-g) instead of as a dev dependency
+npx jrx setup
+npx jrx setup --dry-run    # print the install command without running it
+npx jrx setup --yes        # skip the confirmation prompt
+npx jrx setup --global     # install globally (-g) instead of as a dev dependency
 
 # npx-style passthrough to any resolvable tool
-jrx run tailor -- list
-jrx run resume -- validate --resume resume.en.json
+npx jrx run tailor -- list
+npx jrx run resume -- validate --resume resume.en.json
 ```
 
 Exit codes follow the same convention every jsonresume-tools CLI uses: `0` clean, `1`

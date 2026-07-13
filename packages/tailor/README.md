@@ -185,31 +185,31 @@ The bin is installed as both `jsonresume-tailor` and the shorter alias `jrt`.
 
 ```bash
 # Filter the master resume through the "backend" variant and write the result
-jrt build backend --resume resume.en.json --out resume.backend.en.json
+npx jrt build backend --resume resume.en.json --out resume.backend.en.json
 
 # Preview without writing (prints the same summary to stdout)
-jrt build backend --resume resume.en.json --out resume.backend.en.json --dry-run
+npx jrt build backend --resume resume.en.json --out resume.backend.en.json --dry-run
 
 # Silence "overriding basics.X" warnings
-jrt build backend --resume resume.en.json --out resume.backend.en.json --quiet
+npx jrt build backend --resume resume.en.json --out resume.backend.en.json --quiet
 
 # Show which entries survived per section (with their taggable field counts)
-jrt build backend --resume resume.en.json --out resume.backend.en.json --verbose
+npx jrt build backend --resume resume.en.json --out resume.backend.en.json --verbose
 
 # Batch build: every variant in a directory, through one master, in one command
-jrt build --resume resume.en.json --variants-dir variants/ --out-dir dist/
+npx jrt build --resume resume.en.json --variants-dir variants/ --out-dir dist/
 
 # Inspect indexed taggable fields and tag maps — handy for writing highlightTags/keywordTags/courseTags
-jrt inspect --resume resume.en.json
-jrt inspect --resume resume.en.json --section work
-jrt inspect --resume resume.en.json --format json
+npx jrt inspect --resume resume.en.json
+npx jrt inspect --resume resume.en.json --section work
+npx jrt inspect --resume resume.en.json --format json
 
 # List the variants found in variants/*.json
-jrt list
+npx jrt list
 
 # Check meta.tailor annotations for coherence against the variants
-jrt check --resume resume.en.json
-jrt check backend --resume resume.en.json   # a single variant
+npx jrt check --resume resume.en.json
+npx jrt check backend --resume resume.en.json   # a single variant
 ```
 
 `build` prints a per-section summary on success:

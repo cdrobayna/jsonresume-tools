@@ -95,9 +95,9 @@ export default {
 All three tools also accept a one-off override without touching a config file:
 
 ```bash
-jrl --rule schema=error resume.json
-jrp --rule lengthRatio=off resume.en.json resume.es.json
-jrx check --theme operations-precision
+npx jrl --rule schema=error resume.json
+npx jrp --rule lengthRatio=off resume.en.json resume.es.json
+npx jrx check --theme operations-precision
 ```
 
 See [`/reference/lint`](/reference/lint#rules-and-defaults) and
