@@ -8,6 +8,14 @@ export interface StepResult {
   stderr?: string
   /** Set when the step was intentionally not run (e.g. no --theme given, so audit is skipped). */
   skipped?: boolean
+  /**
+   * One-line highlight appended to the step's `[STATUS] label` line, shown unconditionally —
+   * independent of `--verbose` and pass/fail — unlike `stdout`/`stderr`, whose detail block is
+   * gated below. Generic by design: this module has no notion of "audit" or "resume-cli";
+   * callers attach whatever short, always-worth-seeing highlight applies to their step (e.g.
+   * resume-cli audit's ATS score).
+   */
+  summary?: string
 }
 
 export interface AggregatedReport {
@@ -37,13 +45,15 @@ function statusLabel(step: StepResult): string {
   return 'ERROR'
 }
 
-/** Renders an aggregated report as a human-readable summary: one status line per step, with the
- * underlying tool output indented beneath any step that failed (or every step, with `verbose`). */
+/** Renders an aggregated report as a human-readable summary: one status line per step (with any
+ * `summary` highlight appended, shown regardless of `verbose`/pass-fail), with the underlying
+ * tool output indented beneath any step that failed (or every step, with `verbose`). */
 export function formatReport(report: AggregatedReport, opts: FormatReportOptions = {}): string {
   const lines: string[] = []
 
   for (const step of report.steps) {
-    lines.push(`[${statusLabel(step)}] ${step.label}`)
+    const summarySuffix = step.summary ? ` — ${step.summary}` : ''
+    lines.push(`[${statusLabel(step)}] ${step.label}${summarySuffix}`)
     const showDetail = !step.skipped && (opts.verbose || step.code !== 0)
     if (showDetail) {
       const detail = [step.stdout, step.stderr].filter(Boolean).join('\n').trim()

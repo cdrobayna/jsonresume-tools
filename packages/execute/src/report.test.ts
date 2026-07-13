@@ -77,4 +77,22 @@ describe('formatReport', () => {
     const report = aggregate([{ label: 'a', tool: 'lint', code: 0 }])
     expect(formatReport(report)).toContain('1 step(s) passed.')
   })
+
+  it('always shows an optional summary on the status line, regardless of verbose or pass/fail', () => {
+    const report = aggregate([
+      { label: 'audit (resume.en.json)', tool: 'resume', code: 0, summary: '88/100 (grade B, excellent), 9/10 checks passed' },
+      { label: 'audit (resume.es.json)', tool: 'resume', code: 1, summary: '40/100 (grade F, poor), 2/10 checks passed' }
+    ])
+    const text = formatReport(report) // non-verbose
+    expect(text).toContain('[PASS] audit (resume.en.json) — 88/100 (grade B, excellent), 9/10 checks passed')
+    expect(text).toContain('[FAIL] audit (resume.es.json) — 40/100 (grade F, poor), 2/10 checks passed')
+  })
+
+  it('omits the summary suffix entirely when a step has none', () => {
+    const report = aggregate([{ label: 'lint (masters)', tool: 'lint', code: 0 }])
+    const line = formatReport(report)
+      .split('\n')
+      .find((l) => l.includes('lint (masters)'))
+    expect(line).toBe('[PASS] lint (masters)')
+  })
 })
